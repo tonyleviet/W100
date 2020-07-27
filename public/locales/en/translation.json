@@ -1,0 +1,26 @@
+{
+  "title": {
+    "addProduct":"Thêm mới",
+    "editProduct":"Update"
+  },
+  "product": {
+    "name": "Tên sản phẩm",
+    "description": "Mô tả",
+    "images": "Hình ảnh"
+  },  
+  "label": {
+    "name": "Tên sản phẩm",
+    "description": "Mô tả",
+    "price": "Giá",
+    "images": "Hình ảnh",
+    "city": "Tỉnh/Thành phố",
+    "requireCity": "Cần chọn một Tỉnh/Thành phố",
+    "district": "Quận/Huyện",
+    "requireDistrict": "Cần chọn trước một Tỉnh/Thành phố",
+    "phone":"Phone",
+    "address":"Address"
+  },
+  "button": {
+    "save": "Lưu"
+  }
+}

@@ -1,0 +1,23 @@
+.product-footer {
+    align-items: start !important;
+}
+
+.product-footer-title {
+    padding-top: 8px;
+}
+
+.product-summary {
+    margin-left: 8px;
+}
+
+.product-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-flow: row;
+    width: 100%;
+}
+
+.product-action {
+    flex: 1 1 100%;
+}
