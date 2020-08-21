@@ -5,6 +5,7 @@ const initialState = {
   cities: [],
   districts: [],
   settings: [],
+  selectedCity:79,
 };
 
 export default function (state = initialState, action) {

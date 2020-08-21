@@ -6,6 +6,7 @@ import { BrowserRouter, Switch, Route, Redirect } from 'react-router-dom';
 import Root from './Root';
 import Routes from './Routes';
 import './index.scss';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import i18n from './i18n';
 
 ReactDOM.render(

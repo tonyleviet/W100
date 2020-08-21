@@ -7,17 +7,17 @@ const USER_KEY = "auth-demo-key";
 class AuthService {
 
   static onSignIn(userInfo) {
-    const userId = userInfo.user.id;
-    const email = userInfo.user.email;
-    const name = userInfo.user.name;
+    const userId = userInfo.Id;
+    const email = userInfo.Email;
+    const name = userInfo.Name;
     const datetime = new Date();
     FirebaseService.userCollectionById(userId).get().then((querySnapshot) => {
       const users = [];
 
       querySnapshot.forEach((doc) => {
-        const { userId, name, email, phone, cityID, districtID, wardID, lastUpdate } = doc.data();
+        const { userId, name, email, phone, cityID, districtID, wardID, address, lastUpdate } = doc.data();
         console.log('userCollectionById querySnapshot', doc.data());
-        users.push({ id: doc.id, userId, name, email, phone, cityID, districtID, wardID });
+        users.push({ id: doc.id, userId, name, email, phone, cityID, districtID, address, wardID });
       });
       if (users.length <= 0) {
         FirebaseService.adduser(userId, name, email, null, null, null, null,null, datetime);
@@ -25,7 +25,7 @@ class AuthService {
       else {
         const currentUser = users[0];
         FirebaseService.setUser(currentUser.id, currentUser.userId, name, email, currentUser.phone,
-          currentUser.cityID, currentUser.districtID, currentUser.wardID, datetime);
+          currentUser.cityID, currentUser.districtID, currentUser.wardID, currentUser.address, datetime);
       }
     });
     AsyncStorage.setItem(USER_KEY, JSON.stringify(userInfo));

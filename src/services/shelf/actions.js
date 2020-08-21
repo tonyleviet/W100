@@ -21,9 +21,9 @@ export const stateUpdate = ({ prop, value }) => {
     payload: { prop, value }
   };
 };
-export const fetchProducts = (filters, sortBy, callback) => dispatch => {
-
-  return FirebaseService.activeProductsCollection(1, 10, 79, 0).get()
+export const fetchProducts = (pageIndex, pageSize, cityID, districtID, callback) => dispatch => {
+  console.log('action fetchProducts', pageIndex, '--', pageSize, 'cityID:', cityID, ' districtID: ', districtID);
+  return FirebaseService.activeProductsCollection(pageIndex, pageSize, cityID, districtID).get()
     .then(querySnapshot => {
       // let { products } = res.data;
       let products = [];
@@ -31,7 +31,7 @@ export const fetchProducts = (filters, sortBy, callback) => dispatch => {
       //  products=currentProducts
       //}
       //if(this.props)
-     
+
       querySnapshot.forEach((doc) => {
         const { userId, imageUrls, name, price, phone, address, description,
           color, size, active, city, cityName, district, districtName, lastUpdate } = doc.data();
@@ -49,7 +49,7 @@ export const fetchProducts = (filters, sortBy, callback) => dispatch => {
         type: FETCH_PRODUCTS,
         payload: products
       });
-    }); 
+    });
   /* return axios
     .get(productsAPI)
     .then(res => {

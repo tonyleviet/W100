@@ -20,7 +20,7 @@ class FirebaseService {
 
   static addProduct(userId, imageUrls, city, cityName, district, districtName, name,
     price, phone, address, description, color, size, active) {
-    
+
     const datetime = new Date();
     let productToAdd = {
       userId, imageUrls, city, cityName, district, districtName, name,
@@ -76,24 +76,25 @@ class FirebaseService {
     //if(nextTotalItems>total){
     //  nextTotalItems=total; 
     //}
-    if(districtID!==0){
+    if (districtID !== 0) {
       return this.productsCollection()
-      .where("active", "==", true)
-      .where("city", "==", cityID)
-      .where("district", "==", districtID)
-      .orderBy("lastUpdate", "desc")
-      //.startAt(skip) 
-      .limit(nextTotalItems);
+        .where("active", "==", true)
+        .where("city", "==", cityID)
+        .where("district", "==", districtID)
+        .orderBy("lastUpdate", "desc")
+        //.startAt(skip) 
+        .limit(nextTotalItems);
     }
-    else{
+    else {
       return this.productsCollection()
-      .where("active", "==", true)
-      .where("city", "==", cityID)
-      .orderBy("lastUpdate", "desc")
-      //.startAt(skip) 
-      .limit(nextTotalItems);
+        .where("active", "==", true)
+        .where("city", "==", cityID)
+        .orderBy("lastUpdate", "desc")
+        //.startAt(skip) 
+        .limit(nextTotalItems);
+        
     }
-   
+
   }
   static productsCollectionByUser(userId, pageIndex, pageSize) {
     const nextTotalItems = (pageIndex) * pageSize;
@@ -126,7 +127,7 @@ class FirebaseService {
   }
 
   static setUser(docId, userId, name, email, phone, cityID, districtID, wardID, address, datetime) {
-    //console.log("setProduct :"+id+"-"+userId+"-");
+    console.log("setProduct :" + docId + "-" + userId + "-" + datetime + "-");
     return FirebaseApp.firestore().collection('users').doc(docId).set({ userId, name, email, phone, cityID, districtID, wardID, address, lastUpdate: datetime });
   }
 
@@ -135,16 +136,16 @@ class FirebaseService {
     const metadata = { cacheControl: 'public,max-age=604800', contentType: 'image/jpeg' };
     return FirebaseApp.storage().ref(`/products/images/${id}.jpg`).putFile(path, metadata);
 
-    
+
   }
 
   static uploadImageBase64(base64) {
     const id = imageId();
     const metadata = { cacheControl: 'public,max-age=604800', contentType: 'image/jpeg' };
-    console.log('uploadImageBase64 base64',base64);
-    return FirebaseApp.storage().ref(`/products/images/${id}.jpg`).putString(base64.substring(23), 'base64', {contentType:'image/jpg'});
+    console.log('uploadImageBase64 base64', base64);
+    return FirebaseApp.storage().ref(`/products/images/${id}.jpg`).putString(base64.substring(23), 'base64', { contentType: 'image/jpg' });
 
-    
+
   }
 }
 

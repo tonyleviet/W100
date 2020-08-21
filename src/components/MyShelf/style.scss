@@ -1,7 +1,7 @@
-.shelf-container {
+.my-shelf-container {
   display: flex;
   flex-wrap: wrap;
-  width: 85%;
+  /* width: 85%; */
   min-height: 600px;
 
   &-header {
@@ -44,8 +44,8 @@
     margin-bottom: 3px;
     border: 1px solid transparent;
     cursor: pointer;
-    background-color: ghostwhite;
     display: inline-block;
+    background-color: ghostwhite;
     &:hover {
       border: 1px solid #eee;
       background-color: gainsboro;

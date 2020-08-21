@@ -6,10 +6,12 @@ import { FirebaseService } from './services/FirebaseService';
 import { SettingService } from './services/SettingService';
 
 import { FirebaseConfig } from './services/FirebaseApp';
+import { AuthService } from './services/AuthService';
 //import About from "./About/About";
 //import Contact from "./Contact/Contact";
 //import Products from "./Product/Products";
 import App from './components/App';
+import MyShelf from './components/MyShelf';
 import ProductDetails from './components/ProductDetails';
 import AddEditProduct from './components/AddEditProduct';
 import GithubCorner from './components/github/Corner';
@@ -18,6 +20,7 @@ import SafeLink from './components/SafeLink';
 import { Nav } from 'react-bootstrap';
 import Filter from './components/Shelf/Filter';
 import i18n from './i18n';
+import { Button } from "reactstrap";
 
 
 /* Default
@@ -49,6 +52,7 @@ export default class Routes extends Component {
     this.state = {
       isUserLoggedIn: false
     };
+    this.googleButton = React.createRef();
     // i18n.changeLanguage('vn');
   }
   handleSetttings() {
@@ -101,10 +105,12 @@ export default class Routes extends Component {
   }
 
   responseGoogle = response => {
-    console.log(response);
+    console.log('this.responseGoogle ', response);
+    AuthService.onSignIn({ Id: response.googleId, Name: response.profileObj.name, Email: response.profileObj.email });
     FirebaseService.signIn(response.wc.id_token, response.wc.access_token).then(rs => {
       console.log("FirebaseService.signIn", rs);
       this.setState({ isUserLoggedIn: true });
+
       FirebaseService.activeProductsCollection(1, 10, 79, 768).get()
         .then(querySnapshot => {
           // let { products } = res.data;
@@ -148,8 +154,9 @@ export default class Routes extends Component {
             onSuccess={this.responseGoogle}
             onFailure={this.responseGoogle}
           >
-            <span> Login with Google</span>
+            <span ref={this.googleButton}> Login with Google</span>
           </GoogleLogin>
+
         )}
         {this.state.isUserLoggedIn && (
           <GoogleLogout
@@ -164,16 +171,19 @@ export default class Routes extends Component {
             onLogoutSuccess={this.logout}
           />
         )}
+        <Button onClick={e => (console.log(this.googleButton))}>Test</Button>
         {/*    <Nav.Link href="/ProductDetails/1">Products</Nav.Link> */}
         <Link to="/"> Home</Link>
         <span>-</span>
         <Link to={{ pathname: '/ProductDetails/1', query: { the: 'query' } }} > InApp Products</Link>
-        <SafeLink to={{ pathname: '/AddEdit/1', query: { the: 'query' } }} requireAuth={true} > Add New</SafeLink>
-        <GithubCorner />
+        <SafeLink to={{ pathname: '/MyShelf', query: { the: 'query' } }} loginBtn={this.googleButton} requireAuth={true} > My Shelf</SafeLink>
+        <SafeLink to={{ pathname: '/AddEdit/1', query: { the: 'query' } }} loginBtn={this.googleButton} requireAuth={true} > Add New</SafeLink>
+        {/*   <GithubCorner /> */}
         <main>
 
           <Switch>
             <Route path="/" component={App} exact />
+            <Route path="/MyShelf" component={MyShelf} exact />
             <Route path="/ProductDetails/:id" component={ProductDetails} exact />
             <Route path="/AddEdit/:id" component={AddEditProduct} rexact />
           </Switch>

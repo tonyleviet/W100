@@ -2,9 +2,9 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 const Selectbox = ({ name, value, options, classes, handleOnChange, placeHolder  }) => {
-
+  console.log('Selectbox name',name, ' value ',value);
   if (!options || !options.length) {
-    console.log('Selectbox placeHolder',placeHolder);
+   
     options = [
       { value: 0, label: placeHolder }];
   }

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Link, withRouter } from 'react-router-dom';
+import ReactDOM from 'react-dom';
 import { AuthService } from '../services/AuthService';
 
 class SafeLink extends Component {
@@ -9,8 +10,11 @@ class SafeLink extends Component {
             console.log('isLogged', isLogged);
             var isPrevent = false;
             if (this.props.requireAuth == true && isLogged == false) {
-                console.log('Require login');
                 isPrevent = true;
+                var loginBtn = this.props.loginBtn;
+                console.log('SafeLink login', this.props.requireAuth, 'loginBtn ', loginBtn);
+                if (loginBtn.current)
+                    loginBtn.current.click();
             }
 
             if (this.props.to === this.props.history.location.pathname) {
@@ -26,7 +30,9 @@ class SafeLink extends Component {
         });
         event.preventDefault();
     }
+    componentDidMount() {
 
+    }
     render() {
         const { children, onClick, ...other } = this.props;
         return <Link onClick={this.onClick.bind(this)} {...other}>{children}</Link>

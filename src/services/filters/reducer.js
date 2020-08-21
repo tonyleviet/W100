@@ -1,7 +1,9 @@
 import { UPDATE_FILTER } from './actionTypes';
 
 const initialState = {
-  items: []
+  items: [],
+  selectedCity:0,
+  selectedDistrict:0,
 };
 
 export default function(state = initialState, action) {
