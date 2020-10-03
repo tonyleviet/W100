@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 
 import { fetchProducts, stateUpdate } from '../../services/shelf/actions';
 import { FirebaseService } from '../../services/FirebaseService';
+import { AuthService } from '../../services/AuthService';
 import InfiniteScroll from "react-infinite-scroll-component";
 import { GoogleLogin } from 'react-google-login';
 import { Button, Modal } from "react-bootstrap";
@@ -12,9 +13,7 @@ import ShelfHeader from './ShelfHeader';
 import Filter from './Filter';
 import ProductList from './ProductList';
 import ChooseLocation from '../ChooseLocation';
-
 import './style.scss';
-
 class Shelf extends Component {
   static propTypes = {
     fetchProducts: PropTypes.func.isRequired,
@@ -22,7 +21,7 @@ class Shelf extends Component {
     filters: PropTypes.array,
     sort: PropTypes.string
   };
-
+  mounted = false;
   state = {
     isLoading: false,
     loadMore: true,
@@ -30,50 +29,57 @@ class Shelf extends Component {
     selectedCity: 0,
     selectedDistrict: 0,
     pageIndex: 1,
-    pageSize: 10,
+    pageSize: 5,
     totalProduct: 0,
+    mounted: false
   };
   constructor(props) {
     super(props);
     console.log('constructor index shelf props', props);
     this.handleFilter = this.handleFilter.bind(this);
     this.handleChooseLocation = this.handleChooseLocation.bind(this);
+
   }
   componentDidMount() {
-    this.fetchProducts();
-  }
+    this.mounted = true;
 
-  componentWillReceiveProps(nextProps) {
-    /* const { filters: nextFilters, sort: nextSort } = nextProps;
-    console.log('filters', nextFilters);
-    const { filters } = this.props;
-    if (nextFilters.length !== filters.length) {
-      this.handleFetchProducts(this.state.pageIndex, this.state.pageSize, nextFilters, undefined);
+    if (this.mounted == true) {
+      if ((this.props.defaultCity && this.props.defaultCity != this.state.selectedCity) ||
+        (this.props.defaultDistrict && this.props.defaultDistrict != this.state.selectedDistrict)) {
+        this.setState({ selectedCity: this.props.defaultCity });
+        this.setState({ selectedDistrict: this.props.defaultDistrict });
+        this.wait(1000).then(() => {
+          console.log('componentDidMount fetchProducts');
+          this.fetchProducts();
+        });
+      }
     }
-
-    if (nextSort !== this.props.sort) {
-      this.handleFetchProducts(this.state.pageIndex, this.state.pageSize, undefined, nextSort);
-    } */
+  }
+  componentWillUnmount() {
+    this.mounted = false;
+  }
+  wait(timeout) {
+    return new Promise(resolve => {
+      setTimeout(resolve, timeout);
+    });
+  }
+  componentWillReceiveProps(nextProps) {
+    console.log('Shelf componentWillReceiveProps', nextProps);
   }
   fetchProducts = () => {
     console.log('fetchProducts begin');
-
-    this.props.fetchProducts(this.state.pageIndex, this.state.pageSize, this.state.selectedCity, this.state.selectedDistrict, () => {
-      //this.setState({ isLoading: false });
-    });
     this.productsTotal(this.state.selectedCity, this.state.selectedDistrict).then(r => {
-      console.log('productsTotal', r);
+      console.log('productsTotal', r,' currentTotal', this.state.pageSize * this.state.pageIndex);
       this.setState({ totalProduct: r });
-      if (this.state.pageSize * this.state.pageIndex >= r) {
+      if (this.state.pageSize * this.state.pageIndex > r) {
         this.setState({ hasMore: false });
         return null;
       }
 
     });
-    /*  this.productsPage(this.state.pageIndex, this.state.pageSize, this.state.selectedCity, this.state.selectedDistrict).then(products => {
-       this.props.stateUpdate({ prop: 'products', value: products });
-       //this.wait(2000).then(() => { this.setLoadingMore(false); });
-     }); */
+    this.props.fetchProducts(this.state.pageIndex, this.state.pageSize, this.state.selectedCity, this.state.selectedDistrict, () => {
+      //this.setState({ isLoading: false });
+    });
   }
   productsPage = (pageIndex, pageSize, cityID, districtID) => {
     console.log('productsPage querySnapshot', pageIndex, '--', pageSize, 'cityID:', cityID, ' districtID: ', districtID);
@@ -81,14 +87,7 @@ class Shelf extends Component {
       FirebaseService.activeProductsCollection(pageIndex, pageSize, cityID, districtID)
         .get()
         .then((querySnapshot) => {
-          //.onSnapshot((querySnapshot) => {
-          //console.log('querySnapshot', querySnapshot);
-
           let products = [];
-          //if(currentProducts){
-          //  products=currentProducts
-          //}
-          //if(this.props)
           querySnapshot.forEach((doc) => {
             const { userId, imageUrls, name, price, phone, address, description,
               color, size, active, city, cityName, district, districtName, lastUpdate } = doc.data();
@@ -98,14 +97,15 @@ class Shelf extends Component {
               id: doc.id, userId: null, imageUrls: imageUrls, name, price, phone, address, description,
               color, size, active, city, cityName, district, districtName, lastUpdate: lastUpdatedDate
             });
-
-
           });
           resolve(products);
         });
     });
   };
   productsTotal = (cityID, districtID) => {
+    cityID = parseInt(cityID);
+    districtID = parseInt(districtID);
+    districtID = 0;
     return new Promise((resolve, reject) => {
       var ref = null
       if (!districtID && districtID != null && districtID !== 0) {
@@ -127,41 +127,41 @@ class Shelf extends Component {
   };
   fetchMoreData = () => {
     console.log('handleLoadMore pageSize', this.state.pageSize, ' pageIndex-', this.state.pageIndex, ' totalProduct - ', this.state.totalProduct);
-    if (this.state.pageSize * this.state.pageIndex >= this.state.totalProduct) {
+    if ((this.state.pageSize * (this.state.pageIndex)) > this.state.totalProduct) {
+      console.log('handleLoadMore NoLoadMore currentTotal', (this.state.pageSize * (this.state.pageIndex)), ' totalProduct - ', this.state.totalProduct);
+      this.setState({ hasMore: false });
       return null;
     }
     else {
-      //const { loadMore } = this.state
-
       this.setState(
         (prevState, nextProps) => ({
           pageIndex: prevState.pageIndex + 1,
           hasMore: true
         }),
         () => {
+          console.log('fetchMoreData fetchProducts');
           this.fetchProducts();
         }
       );
     }
   };
   setLoadingMore(loadMore) {
-
-    //this.props.stateUpdate({ prop: 'refreshing', value: refresh });
     this.setState((prevState, nextProps) => ({
       loadMore: loadMore
     }));
   }
-  /* handleFetchProducts = (
-    pageIndex,
-    pageSize,
-    filters = this.props.filters,
-    sort = this.props.sort
-  ) => {
-    this.setState({ isLoading: true });
-    this.props.fetchProducts(pageIndex, pageSize, filters, sort, () => {
-      this.setState({ isLoading: false });
-    });
-  }; */
+
+  setLocation(cityID, districtID) {
+    if (cityID) {
+      localStorage.setItem('selectedCity', cityID);
+    }
+    if (districtID) {
+      localStorage.setItem('selectedDistrict', districtID);
+    }
+
+    AuthService.updateUser(cityID, districtID, null, null);
+  }
+
   wait(timeout) {
     return new Promise(resolve => {
       setTimeout(resolve, timeout);
@@ -169,7 +169,7 @@ class Shelf extends Component {
   }
 
 
-  responseGoogle = (response) => {
+  /* responseGoogle = (response) => {
     console.log(response);
     FirebaseService.signIn(response.wc.id_token, response.wc.access_token);
   };
@@ -186,36 +186,51 @@ class Shelf extends Component {
         />aaaaaaaaaaa</div>,
       document.getElementById('googleButton')
     );
-  };
+  }; */
   handleFilter(newfilters) {
-    if (newfilters.selectedCity) {
-      this.setState({ selectedCity: parseInt(newfilters.selectedCity.value) });
-      console.log('newfilters selectedCity', newfilters.selectedCity.value);
+    console.log('handleFilter newfilters', newfilters, this.state);
+    if (newfilters.selectedCity != this.state.selectedCity || newfilters.selectedDistrict != this.state.selectedDistrict) {
+      if (newfilters.selectedCity) {
+        this.setState({ selectedCity: newfilters.selectedCity });
+        console.log('newfilters selectedCity', newfilters.selectedCity);
+      }
+      if (newfilters.selectedDistrict) {
+        //this.setState({ selectedDistrict: parseInt(newfilters.selectedDistrict.value )});
+        console.log('newfilters selectedDistrict', newfilters.selectedDistrict);
+      }
+      this.setLocation(newfilters.selectedCity, newfilters.selectedDistrict)
+      this.setState({ pageIndex: 1 });
+      this.wait(1000).then(() => {
+        console.log('handleFilter fetchProducts');
+        this.fetchProducts();
+      });
     }
-    if (newfilters.selectedDistrict) {
-      //this.setState({ selectedDistrict: parseInt(newfilters.selectedDistrict.value )});
-      console.log('newfilters selectedDistrict', newfilters.selectedDistrict.value);
-    }
-    this.setState({ pageIndex: 1 });
-    this.wait(1000).then(() => { this.fetchProducts(); });
-
   }
   handleChooseLocation(newfilters) {
     console.log('handleChooseLocation newfilters', newfilters);
-    if (newfilters.selectedCity) {
-      this.setState({ selectedCity: newfilters.selectedCity });
-      console.log('handleChooseLocation selectedCity', newfilters.selectedCity);
+    if (newfilters.selectedCity != this.state.selectedCity || newfilters.selectedDistrict != this.state.selectedDistrict) {
+      if (newfilters.selectedCity) {
+        this.setState({ selectedCity: newfilters.selectedCity });
+        console.log('handleChooseLocation selectedCity', newfilters.selectedCity);
+      }
+      if (newfilters.selectedDistrict) {
+        //this.setState({ selectedDistrict: parseInt(newfilters.selectedDistrict )});
+        console.log('handleChooseLocation selectedDistrict', newfilters.selectedDistrict);
+      }
+      this.setLocation(newfilters.selectedCity, newfilters.selectedDistrict);
+      this.setState({ pageIndex: 1 });
+
+      this.wait(1000).then(() => {
+        console.log('handleChooseLocation fetchProducts');
+        this.fetchProducts();
+      });
     }
-    if (newfilters.selectedDistrict) {
-      //this.setState({ selectedDistrict: parseInt(newfilters.selectedDistrict )});
-      console.log('handleChooseLocation selectedDistrict', newfilters.selectedDistrict);
-    }
-    this.setState({ pageIndex: 1 });
-    this.wait(1000).then(() => { this.fetchProducts(); });
 
   }
+
+
+
   render() {
-    //console.log('render', this.state)
     const { products } = this.props;
     const { isLoading, selectedCity, selectedDistrict, totalProduct, hasMore } = this.state;
     return (
@@ -228,10 +243,11 @@ class Shelf extends Component {
           <ShelfHeader productsLength={totalProduct} />
 
           <InfiniteScroll
-            dataLength={totalProduct}
+            dataLength={products.length}
             next={this.fetchMoreData}
             hasMore={hasMore}
             loader={<h4>Loading...</h4>}
+            scrollThreshold="200px"
           >
             <ProductList products={products} />
           </InfiniteScroll>

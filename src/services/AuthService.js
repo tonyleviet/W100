@@ -11,7 +11,7 @@ class AuthService {
     const email = userInfo.Email;
     const name = userInfo.Name;
     const datetime = new Date();
-    FirebaseService.userCollectionById(userId).get().then((querySnapshot) => {
+    return FirebaseService.userCollectionById(userId).get().then((querySnapshot) => {
       const users = [];
 
       querySnapshot.forEach((doc) => {
@@ -20,15 +20,22 @@ class AuthService {
         users.push({ id: doc.id, userId, name, email, phone, cityID, districtID, address, wardID });
       });
       if (users.length <= 0) {
-        FirebaseService.adduser(userId, name, email, null, null, null, null,null, datetime);
+        FirebaseService.adduser(userId, name, email, null, null, null, null, null, datetime);
       }
       else {
         const currentUser = users[0];
+        userInfo.districtID = currentUser.districtID;
+        userInfo.cityID = currentUser.cityID;
+
         FirebaseService.setUser(currentUser.id, currentUser.userId, name, email, currentUser.phone,
           currentUser.cityID, currentUser.districtID, currentUser.wardID, currentUser.address, datetime);
       }
+
+      AsyncStorage.setItem(USER_KEY, JSON.stringify(userInfo));
+
+      return userInfo;
     });
-    AsyncStorage.setItem(USER_KEY, JSON.stringify(userInfo));
+
   }
 
   static onSignOut() {
@@ -36,15 +43,16 @@ class AuthService {
   }
   static updateUser(city, district, phone, address) {
     this.currentUser().then(currentUser => {
+      console.log('updateUser currentUser', currentUser);
       if (currentUser) {
-        FirebaseService.userCollectionById(currentUser.user.id).get().then((querySnapshot) => {
+        FirebaseService.userCollectionById(currentUser.Id).get().then((querySnapshot) => {
           console.log('updateUser querySnapshot', querySnapshot);
           const users = [];
           const datetime = new Date();
 
           querySnapshot.forEach((doc) => {
             const { userId, name, email, phone, cityID, districtID, wardID, address, lastUpdate } = doc.data();
-          
+
             users.push({ id: doc.id, userId, name, email, phone, cityID, districtID, wardID, address });
           });
           if (users.length > 0) {

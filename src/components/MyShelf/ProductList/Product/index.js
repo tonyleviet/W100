@@ -63,7 +63,7 @@ const Product = ({ product, addProduct }) => {
         )}
       </div>
       {/* <div className="shelf-item__buy-btn">Add to cart</div> */}
-      <Link to={{ pathname: '/ProductDetails/' + product.id, product: product }} id={product.id} style={{display:'none'}} > Xem chi tiết</Link>
+      <Link to={{ pathname: '/AddEdit/' + product.id, product: product }} id={product.id} style={{display:'none'}} > Xem chi tiết</Link>
     </div>
   );
 };

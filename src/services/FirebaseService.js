@@ -60,17 +60,19 @@ class FirebaseService {
   }
 
   static activeProductsCollection(pageIndex, pageSize, cityID, districtID) {
+    cityID = parseInt(cityID);
+    districtID = parseInt(districtID);
     //let pageSize = 10;
     const date = new Date();
 
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
-
+    districtID = 0;
     const last30Days = new Date(year, month - 1, day) // Subtract 1 MONTH
     const nextTotalItems = (pageIndex) * pageSize;
     //console.log("activeProductsCollection skip:", nextTotalItems, " pageSize:", pageSize)
-
+    console.log('service activeProductsCollection', pageIndex, '--', pageSize, 'cityID:', cityID, ' districtID: ', districtID ,' nextTotalItems-' , nextTotalItems);
     //const total =   this.productsCollection().get().then(res => console.log(res.size));
     //console.log("total", total);
     //if(nextTotalItems>total){
@@ -92,15 +94,15 @@ class FirebaseService {
         .orderBy("lastUpdate", "desc")
         //.startAt(skip) 
         .limit(nextTotalItems);
-        
+
     }
 
   }
   static productsCollectionByUser(userId, pageIndex, pageSize) {
     const nextTotalItems = (pageIndex) * pageSize;
-    //console.log("productsCollectionByUser nextTotalItems", nextTotalItems);
+    console.log("productsCollectionByUser nextTotalItems", nextTotalItems,' userId ', userId);
     return this.productsCollection()
-      .where("userId", "==", userId)
+      .where("userId", "==", '109490188028640126173')
       .orderBy("lastUpdate", "desc")
       .limit(nextTotalItems);
     ;

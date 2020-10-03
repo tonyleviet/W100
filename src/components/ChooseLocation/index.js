@@ -18,28 +18,51 @@ class ChooseLocation extends Component {
     constructor(props) {
         super(props)
         console.log('Filter Component', props);
-        SettingService.getCities().then(cities => {
-            this.setState({ cities: cities });
-        });
-        SettingService.getDistricts().then(districts => {
-            this.setState({ districts: districts });
-            if (props.defaultCity) {
-                this.setState({ districtOfCity: districts.filter(x => x.CityID == props.defaultCity) });
-            }
 
-        })
-        this.setState({ selectedCity: props.defaultCity});
-        this.setState({ selectedDistrict: props.defaultDistrict});
         this.handleSaveChange = this.handleSaveChange.bind(this);
     }
     componentDidMount() {
-        if (this.props.defaultCity == 0 || this.props.defaultDistrict == 0) {
-            this.setShow(true);
-        }
+        this.wait(1000).then(() => {
+
+            if (this.props.defaultCity == 0 && this.props.defaultDistrict == 0) {
+                this.setShow(true);
+            }
+            var self = this;
+
+            SettingService.getCities().then(cities => {
+                self.setState({ cities: cities });
+            });
+            SettingService.getDistricts().then(districts => {
+
+                if (!districts) {
+                    districts = [];
+                    districts.push({ CityID: 0, City: '', value: 0, label: 'Select a city first', Order: 0 });
+                }
+                self.setState({ districts: districts });
+                if (self.props.defaultCity) {
+                    self.setState({ districtOfCity: districts.filter(x => x.CityID == self.props.defaultCity) });
+                } else {
+                    self.setState({ districtOfCity: districts.filter(x => x.CityID == 0) });
+                }
+
+            })
+
+
+            this.setState({ selectedCity: this.props.defaultCity });
+            this.setState({ selectedDistrict: this.props.defaultDistrict });
+        });
+
     }
+    wait(timeout) {
+        return new Promise(resolve => {
+            setTimeout(resolve, timeout);
+        });
+    }
+
     setShow = (isShow) => {
         this.setState({ show: isShow });
     }
+    handleShow = () => this.setShow(true);
     handleClose = () => this.setShow(false);
     handleSaveChange() {
         var filters = { selectedCity: this.state.selectedCity, selectedDistrict: this.state.selectedDistrict };
@@ -56,8 +79,8 @@ class ChooseLocation extends Component {
         //stateUpdate({ prop: 'selectedCity', value: selectedCity.value })
     }
     updateFilterDistrict(selectedDistrict) {
-        this.setState({ selectedDistrict: parseInt(selectedDistrict.value)  });
-         //stateUpdate({ prop: 'selectedDistrict', value: selectedDistrict.value })
+        this.setState({ selectedDistrict: parseInt(selectedDistrict.value) });
+        //stateUpdate({ prop: 'selectedDistrict', value: selectedDistrict.value })
     }
 
     render() {
@@ -68,7 +91,7 @@ class ChooseLocation extends Component {
                 <div>
                     <Button variant="primary" onClick={this.handleShow}> Launch demo modal</Button>
                 </div>
-                <Modal show={show} onHide={this.handleClose} animation={false} fade={false}  >
+                <Modal show={show} onHide={this.handleClose} animation={false} fade={0}  >
                     <Modal.Header closeButton>
                         <Modal.Title>Modal heading </Modal.Title>
                     </Modal.Header>

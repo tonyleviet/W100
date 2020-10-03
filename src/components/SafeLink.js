@@ -9,10 +9,10 @@ class SafeLink extends Component {
             console.log(this.props);
             console.log('isLogged', isLogged);
             var isPrevent = false;
-            if (this.props.requireAuth == true && isLogged == false) {
+            if (this.props.requireauth == true && isLogged == false) {
                 isPrevent = true;
-                var loginBtn = this.props.loginBtn;
-                console.log('SafeLink login', this.props.requireAuth, 'loginBtn ', loginBtn);
+                var loginBtn = this.props.loginbtn;
+                console.log('SafeLink login', this.props.requireauth, 'loginBtn ', loginBtn);
                 if (loginBtn.current)
                     loginBtn.current.click();
             }

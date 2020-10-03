@@ -1,51 +1,48 @@
-import React, { useState } from 'react';
+import React, { Component, useState } from 'react';
+import { connect } from 'react-redux';
+import { withTranslation, Trans } from "react-i18next";
 import { Row, Form, Col, Button } from 'react-bootstrap';
 import { SettingService } from '../../services/SettingService';
 import { FirebaseService } from '../../services/FirebaseService';
 import Selectbox from '../Selectbox';
-import { withTranslation, Trans } from "react-i18next";
+import { fetchProduct } from '../../services/addEditProduct/addEditProductActions';
 import MultiImageInput from 'react-multiple-image-input';
 import './index.scss';
-class AddEditProduct extends React.Component {
+type Props = {};
+
+class AddEditProduct extends Component<Props> {
+    state = {
+        images: {},
+        product: { imageUrls: [] },
+        cities: [],
+        districts: []
+    };
 
     constructor(props) {
         super(props);
-        this.initialState = {
-            id: 0,
-            name: '',
-            price: '',
-            description: '',
-            cityName: '',
-            city: 0,
-            districtName: '',
-            district: 0,
-            cities: [],
-            districts: [],
-            images: {},
-            active:false,
-            address:'',
-            phone:'',
-            color:'',
-            size:'',
-            imageUrls:[],
-        }
 
-        if (props.product) {
-            this.state = props.product
-        } else {
-            this.state = this.initialState;
+        if (props.match.params.id) {
+            console.log('AddEditProduct this.props.match.params', this.props.match.params);
+            let productId = this.props.match.params.id
+            FirebaseService.getProduct(productId).get().then(querySnapshot => {
+                const data = querySnapshot.data();
+                console.log('AddEditProduct getProduct(productId)', data);
+                data.images = {};
+                data.id = productId;
+                //this.props.fetchProduct(data);
+                this.setState({
+                    product: data
+                })
+            });
+
         }
-      
-        this.state.images = {};
-        this.state.cities = [];
-        this.state.districts = [];
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
 
         this.onFormSubmit = this.onFormSubmit.bind(this);
         this.changeSelectBox = this.changeSelectBox.bind(this);
-        
+
 
     }
     componentDidMount() {
@@ -54,52 +51,57 @@ class AddEditProduct extends React.Component {
             console.log('componentDidMount getCities', cities);
             cities.unshift({ label: t('label.requireCity'), value: 0 });
             this.setState({ cities: cities });
-            this.initialState.cities = cities;
         });
         SettingService.getDistricts().then(districts => {
             this.setState({ districts: districts });
-            this.initialState.districts = districts;
-    
+
             console.log('test filter', districts.filter(x => x.CityID == 12));
         });
-       
+        console.log('AddEditProduct state', this.state);
     }
 
 
-  componentWillReceiveProps(nextProps) {
-   
-  }
+    componentWillReceiveProps(nextProps) {
+
+    }
 
     handleChange(event) {
         const name = event.target.name;
         const value = event.target.value;
+        console.log('handleChange name ', name, ' value ', value);
+        // this.setState({ ...this.state.product, [name]: value });
 
         this.setState({
-            [name]: value
+            product: {
+                ...this.state.product,
+                [name]: value
+            }
         })
+
     }
     changeSelectBox(event) {
         if (event.name == 'city') {
             const selectedCity = this.state.cities[event.selectedIndex];
             //console.log('changeSelectBox selectedCity', selectedCity);
-            this.setState({ city: selectedCity.value })
-            this.setState({ cityName: selectedCity.label })
+            this.setState({ ...this.state.product, city: selectedCity.value });
+            this.setState({ ...this.state.product, cityName: selectedCity.label });
             const selectedDistrict = this.state.districts[10];
-            this.setState({ district: selectedDistrict.value })
-            this.setState({ districtName: selectedDistrict.label })
+
+            this.setState({ ...this.state.product, district: selectedDistrict.value });
+            this.setState({ ...this.state.product, districtName: selectedDistrict.label });
+
         }
         else if (event.name == 'district') {
             const selectedDistrict = this.state.districts[event.selectedIndex];
             //console.log('changeSelectBox selectedDistrict', selectedDistrict);
-            this.setState({ district: selectedDistrict.value })
-            this.setState({ districtName: selectedDistrict.label })
+            this.setState({ ...this.state.product, district: selectedDistrict.value });
+            this.setState({ ...this.state.product, districtName: selectedDistrict.label });
 
         }
     }
     handleSubmit(event) {
         event.preventDefault();
         this.onFormSubmit(this.state);
-        this.setState(this.initialState);
     }
 
 
@@ -107,19 +109,6 @@ class AddEditProduct extends React.Component {
         price, phone, address, description, color, size, active }) => {
         this.uploadImages(imageUrls).then(imagePaths => {
             console.log('productSave reponse', imagePaths);
-            /*  AuthService.updateUser(null, null, phone, address);
-             // return;
-             //console.log('productSave imagePaths', imagePaths);
-             //console.log('productSave userId', userId);
- 
-             Actions.pop();
-             var productToUpdate = {
-                 id, userId, imageUrls: imagePaths, city, cityName, district, districtName, name,
-                 price, phone, address, description, color, size, active
-             };
-             console.log('productSave productToUpdate', productToUpdate);
-             //Actions.loadingLightbox();
-             productSaveWithImage(dispatch, productToUpdate); */
         });
 
 
@@ -131,12 +120,12 @@ class AddEditProduct extends React.Component {
 
                 FirebaseService.uploadImageBase64(imageBase64).then(uploadedFile => {
                     console.log('uploadedFile.downloadURL', uploadedFile);
-                    uploadedFile.ref.getDownloadURL().then(resultFilePath =>{
+                    uploadedFile.ref.getDownloadURL().then(resultFilePath => {
                         //console.log('uploadedFile.resultFilePath', resultFilePath);
                         resolve(resultFilePath);
                     })
                     //imagePaths.push(uploadedFile.downloadURL); 
-                  
+
                 }).catch(err => {
                     throw err;
                     // Oops, something went wrong. Check that the filename is correct and
@@ -156,9 +145,9 @@ class AddEditProduct extends React.Component {
         console.log('onFormSubmit data', data);
         this.uploadImages(data.images).then(imagePaths => {
             console.log('onFormSubmit reponse imagePaths', imagePaths);
-            data.imageUrls = imagePaths;
+            data.product.imageUrls = imagePaths;
             const { id, userId, imageUrls, city, cityName, district, districtName, name, price,
-                phone, address, description, color, size, active } = data;
+                phone, address, description, color, size, active } = data.product;
             //Actions.loadingLightbox();
             console.log("productSaveWithImage-" + id + "-" + userId + "-");
             //return;
@@ -166,38 +155,17 @@ class AddEditProduct extends React.Component {
                 FirebaseService.addProduct('userid', imageUrls, city, cityName, district, districtName, name,
                     price, phone, address, description, color, size, active);
             } else {
-                 FirebaseService.setProduct(id, userId, imageUrls, city, cityName, district, districtName, name,
+                FirebaseService.setProduct(id, userId, imageUrls, city, cityName, district, districtName, name,
                     price, phone, address, description, color, size, active);
             }
-
-            /* result.then(() => {
-                    dispatch({ type: PRODUCT_SAVE });
-                    //Actions.pop();//back to my product screen
-                    //Actions.refresh();
-                    Actions.pop();
-                    setTimeout(() => {
-                        Actions.refresh({
-                            p: Math.random()
-                        });
-                    }, 0);
-                })
-                .catch(() => {
-                    Alert.alert(
-                        i18n.t('app.attention'),
-                        i18n.t('product.save.failureMessage'),
-                        [{ text: i18n.t('app.ok') }],
-                        { cancelable: true }
-                    );
-                }); */
-
         });
     }
 
     render() {
-
-
-        const { cities, districts } = this.state;
+        console.log('render AddEditProduct props', this.props, 'this.state ', this.state);
         const { t } = this.props;
+
+        const { images, cities, districts, product } = this.state;
         const crop = {
             unit: '%',
             aspect: 1 / 1,
@@ -205,7 +173,7 @@ class AddEditProduct extends React.Component {
         };
 
         let pageTitle;
-        if (this.state.id) {
+        if (product.id) {
             pageTitle = <h2>{t('title.editProduct')}</h2>
         } else {
             pageTitle = <h2>{t('title.addProduct')}</h2>
@@ -219,11 +187,11 @@ class AddEditProduct extends React.Component {
                         <Form onSubmit={this.handleSubmit}>
                             <Form.Group controlId="city">
                                 <Form.Label>{t('label.city')}</Form.Label>
-                                <Selectbox name="city" value={this.state.city} options={cities} handleOnChange={this.changeSelectBox}></Selectbox>
+                                <Selectbox name="city" value={product.city} options={cities} handleOnChange={this.changeSelectBox}></Selectbox>
                             </Form.Group>
                             <Form.Group controlId="city">
                                 <Form.Label>{t('label.district')}</Form.Label>
-                                <Selectbox name="district" value={this.state.district} options={districts.filter(x => x.CityID == this.state.city)}
+                                <Selectbox name="district" value={product.district} options={districts.filter(x => x.CityID == product.city)}
                                     handleOnChange={this.changeSelectBox} placeHolder={t('label.requireDistrict')} ></Selectbox>
                             </Form.Group>
                             <Form.Group controlId="name">
@@ -231,7 +199,7 @@ class AddEditProduct extends React.Component {
                                 <Form.Control
                                     type="text"
                                     name="name"
-                                    value={this.state.name}
+                                    value={product.name}
                                     onChange={this.handleChange}
                                     placeholder={t('label.name')} />
                             </Form.Group>
@@ -241,7 +209,7 @@ class AddEditProduct extends React.Component {
                                 <Form.Control
                                     type="text"
                                     name="price"
-                                    value={this.state.price}
+                                    value={product.price}
                                     onChange={this.handleChange}
                                     placeholder={t('label.price')} />
                             </Form.Group>
@@ -250,7 +218,7 @@ class AddEditProduct extends React.Component {
                                 <Form.Control
                                     type="text"
                                     name="phone"
-                                    value={this.state.phone}
+                                    value={product.phone}
                                     onChange={this.handleChange}
                                     placeholder={t('label.phone')} />
                             </Form.Group>
@@ -259,7 +227,7 @@ class AddEditProduct extends React.Component {
                                 <Form.Control
                                     type="text"
                                     name="address"
-                                    value={this.state.address}
+                                    value={product.address}
                                     onChange={this.handleChange}
                                     placeholder={t('label.address')} />
                             </Form.Group>
@@ -268,14 +236,14 @@ class AddEditProduct extends React.Component {
                                 <Form.Control
                                     as="textarea" rows="3"
                                     name="description"
-                                    value={this.state.description}
+                                    value={product.description}
                                     onChange={this.handleChange}
                                     placeholder={t('label.description')} />
                             </Form.Group>
                             <Form.Group controlId="images">
                                 <Form.Label>{t('label.images')}</Form.Label>
                                 <MultiImageInput
-                                    images={this.state.images}
+                                    images={images}
                                     setImages={(images) => {
                                         console.log('setImages', images)
                                         this.setState({ images: images })
@@ -284,9 +252,26 @@ class AddEditProduct extends React.Component {
                                     allowCrop={true}
                                     cropConfig={{ crop, ruleOfThirds: true }}
                                 />
+                                <div style={{
+                                    position: 'relative',
+                                }}>
+                                    {product.imageUrls.map((imageUrl) => <div> <img style={{ width: '100%' }} key={imageUrl} src={imageUrl} />
+                                        <div
+                                            style={{
+                                                position: 'absolute',
+                                                right: 5,
+                                                top: 5,
+
+                                            }}
+                                        >
+                                            <span style={{ color: 'black' }}>X</span>
+                                        </div>
+
+                                    </div>)}
+                                </div>
                             </Form.Group>
                             <Form.Group>
-                                <Form.Control type="hidden" name="id" value={this.state.id} />
+                                <Form.Control type="hidden" name="id" value={product.id} />
                                 <Button variant="success" type="submit">{t('button.save')}</Button>
                             </Form.Group>
                         </Form>
@@ -297,4 +282,22 @@ class AddEditProduct extends React.Component {
     }
 }
 
-export default withTranslation()(AddEditProduct);
+
+const mapStateToProps = state => {
+    console.log('mapStateToProps state.AddEditProduct', state.addEditProduct);
+    return state.addEditProduct;
+
+
+}
+
+const mapDispatchToProps = dispatch => {
+
+    return {
+        fetchProduct: (product) => dispatch(fetchProduct(product))
+    }
+};
+
+
+//export default withTranslation()(AddEditProduct);
+export default withTranslation()(connect(mapStateToProps, mapDispatchToProps)(AddEditProduct));
+//export default connect(mapStateToProps, mapDispatchToProps)(AddEditProduct);

@@ -15,39 +15,64 @@ class Filter extends Component {
   state = {
     cities: [],
     districts: [],
-    districtOfCity: []
+    districtOfCity: [],
+
   };
+  mounted = false;
   constructor(props) {
     super(props)
     console.log('Filter Component', props);
-    SettingService.getCities().then(cities => {
-      this.setState({ cities: cities });
-    });
-    SettingService.getDistricts().then(districts => {
-      this.setState({ districts: districts });
-      if (this.props.defaultCity) {
-        this.setState({ districtOfCity: districts.filter(x => x.CityID == this.props.defaultCity) });
-      }
 
-    })
   }
-  
+  componentDidMount() {
+    this.mounted = true;
+
+    if (this.mounted == true) {
+      SettingService.getCities().then(cities => {
+        this.setState({ cities: cities });
+      });
+      SettingService.getDistricts().then(districts => {
+        if (!districts) {
+          districts = [];
+          districts.push({ CityID: 0, City: '', value: 0, label: 'Select a city first', Order: 0 });
+        }
+        this.setState({ districts: districts });
+
+        if (this.props.defaultCity) {
+          this.setState({ districtOfCity: districts.filter(x => x.CityID == this.props.defaultCity) });
+        }
+        else {
+          this.setState({ districtOfCity: districts.filter(x => x.CityID == 0) });
+        }
+      })
+    }
+  }
+  componentWillUnmount() {
+    this.mounted = false;
+  }
   componentWillReceiveProps(nextProps) {
     console.log('Filter nextProps', nextProps);
     if (nextProps.defaultCity) {
       this.setState({ districtOfCity: this.state.districts.filter(x => x.CityID == nextProps.defaultCity) });
     }
+    else {
+      this.setState({ districtOfCity: this.state.districts.filter(x => x.CityID == 0) });
+    }
   }
-
+  wait(timeout) {
+    return new Promise(resolve => {
+      setTimeout(resolve, timeout);
+    });
+  }
   updateFilterCity(selectedCity) {
-    this.props.handleFilter({ selectedCity: selectedCity });
+    this.props.handleFilter({ selectedCity: parseInt(selectedCity.value) });
     console.log('Filter updateFilterCity', selectedCity, this.state.districts);
     this.setState({ districtOfCity: this.state.districts.filter(x => x.CityID == selectedCity.value) });
-    stateUpdate({ prop: 'selectedCity', value: selectedCity.value })
+    //stateUpdate({ prop: 'selectedCity', value: selectedCity.value })
 
   }
   updateFilterDistrict(selectedDistrict) {
-    this.props.handleFilter({ selectedDistrict: selectedDistrict });
+    this.props.handleFilter({ selectedDistrict: parseInt(selectedDistrict.value) });
     stateUpdate({ prop: 'selectedDistrict', value: selectedDistrict.value })
   }
 

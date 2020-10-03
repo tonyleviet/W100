@@ -2,7 +2,7 @@ import React, { Component, useState } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import { fetchProducts, stateUpdate } from '../../services/shelf/actions';
+import { myProductsFetch, myStateUpdate } from '../../services/myShelf/actions';
 import { FirebaseService } from '../../services/FirebaseService';
 
 import { GoogleLogin } from 'react-google-login';
@@ -15,8 +15,8 @@ import './style.scss';
 
 class MyShelf extends Component {
   static propTypes = {
-    fetchProducts: PropTypes.func.isRequired,
-    products: PropTypes.array.isRequired,
+    myProductsFetch: PropTypes.func.isRequired,
+    myproducts: PropTypes.array.isRequired,
     filters: PropTypes.array,
     sort: PropTypes.string
   };
@@ -25,7 +25,7 @@ class MyShelf extends Component {
     isLoading: false,
     loadMore: true,
     pageIndex: 1,
-    pageSize: 10
+    pageSize: 100
   };
 
   componentDidMount() {
@@ -82,38 +82,37 @@ class MyShelf extends Component {
     });
   };
   fetchMoreData = () => {
-    if (this.state.size * this.state.page >= this.state.total) return null;
-    //const { loadMore } = this.state
-    console.log('handleLoadMore');
-    this.setState(
-      (prevState, nextProps) => ({
-        pageIndex: prevState.pageIndex + 1,
-        loadMore: true
-      }),
-      () => {
+    if ((this.state.pageSize * (this.state.pageIndex)) > this.state.totalProduct) {
+      console.log('handleLoadMore NoLoadMore currentTotal', (this.state.pageSize * (this.state.pageIndex)), ' totalProduct - ', this.state.totalProduct);
+      this.setState({ hasMore: false });
+      return null;
+    } else {
+      //const { loadMore } = this.state
+      console.log('handleLoadMore currentTotal', (this.state.pageSize * (this.state.pageIndex)), ' totalProduct - ', this.state.totalProduct);
+      this.setState(
+        (prevState, nextProps) => ({
+          pageIndex: prevState.pageIndex + 1,
+          loadMore: true
+        }),
+        () => {
 
-        this.productsPage(this.state.pageIndex, this.state.pageSize,79, 0).then(products => {
-          this.props.stateUpdate({ prop: 'products', value: products });
-          this.wait(2000).then(() => { this.setLoadingMore(false); });
-        });
-      }
-    );
+          this.productsPage(this.state.pageIndex, this.state.pageSize, 79, 0).then(products => {
+            this.props.myStateUpdate({ prop: 'products', value: products });
+            this.wait(2000).then(() => { this.setLoadingMore(false); });
+          });
+        }
+      );
+    }
   };
   setLoadingMore(loadMore) {
 
-    //this.props.stateUpdate({ prop: 'refreshing', value: refresh });
+    //this.props.myStateUpdate({ prop: 'refreshing', value: refresh });
     this.setState((prevState, nextProps) => ({
       loadMore: loadMore
     }));
   }
-  handleFetchProducts = (
-    filters = this.props.filters,
-    sort = this.props.sort
-  ) => {
-    this.setState({ isLoading: true });
-    this.props.fetchProducts(this.state.pageIndex, this.state.pageSize, filters, sort, () => {
-      this.setState({ isLoading: false });
-    });
+  handleFetchProducts() {
+      this.props.myProductsFetch(this.state.pageIndex, this.state.pageSize);
   };
   wait(timeout) {
     return new Promise(resolve => {
@@ -121,81 +120,24 @@ class MyShelf extends Component {
     });
   }
 
-  responseGoogle = (response) => {
-    console.log(response);
-    FirebaseService.signIn(response.wc.id_token, response.wc.access_token);
-  };
-  renderReactGoogle = () => {
-
-    return (
-      <div>
-        <GoogleLogin
-          clientId="462924586807-q4r0gtgpg81m5a3tckcnbm2ebfenkshh.apps.googleusercontent.com"
-          buttonText="Login"
-          onSuccess={this.responseGoogle}
-          onFailure={this.responseGoogle}
-          cookiePolicy={'single_host_origin'}
-        />aaaaaaaaaaa</div>,
-      document.getElementById('googleButton')
-    );
-  };
-  /*
-  loginByGoogle = () => {
-    //alert("login By Google");
-    GoogleService.signIn()
-      .then(userInfo => {
-        console.log('GoogleService.signIn userInfo: ', userInfo);
-        //AuthService.onSignIn(userInfo);
-        var userToken = GoogleService.getTokens();
-
-        userToken.then(userTokens => {
-          console.log('GoogleService.signIn userTokens: ', userTokens);
-          FirebaseService.signIn(userTokens.idToken, userTokens.accessToken)
-            .then(user => {
-              console.log(user);
-              //loginSuccess(dispatch, user);
-            })
-            .catch(error => {
-              console.log('FirebaseService.signIn error ', error);
-              //GoogleService.signOut();
-              //loginFail(dispatch, error);
-            });
-        });
-
-      })
-      .catch(error => {
-        //loginFail(dispatch, error);
-      });
-  };
-  */
-
 
   render() {
-    const { products } = this.props;
+    const { myproducts } = this.props;
     const { isLoading } = this.state;
     return (
       <React.Fragment>
         {isLoading && <Spinner />}
-
-
-
-        {/*   <GoogleLogin style={{width:100, height:200, backgroundColor:'red'}}
-          clientId="462924586807-q4r0gtgpg81m5a3tckcnbm2ebfenkshh.apps.googleusercontent.com"
-          buttonText="Login"
-          onSuccess={this.responseGoogle}
-          onFailure={this.responseGoogle}
-          cookiePolicy={'single_host_origin'}
-        /> */}
         <div className="my-shelf-container">
 
-          <ShelfHeader productsLength={products.length} />
+          <ShelfHeader productsLength={myproducts.length} />
           <InfiniteScroll
-            dataLength={products.length}
+            dataLength={myproducts.length}
             next={this.fetchMoreData}
-            hasMore={this.state.loadMore}
+            hasMore={this.state.hasMore}
             loader={<h4>Loading...</h4>}
+            scrollThreshold="200px"
           >
-            <ProductList products={products} />
+            <ProductList products={myproducts} />
           </InfiniteScroll>
 
         </div>
@@ -204,7 +146,7 @@ class MyShelf extends Component {
   }
 }
 const mapStateToProps = state => ({
-  products: state.shelf.products,
+  myproducts: state.myShelf.myproducts,
   filters: state.filters.items,
   sort: state.sort.type,
   cities: state.shelf.cities,
@@ -214,5 +156,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  { fetchProducts, stateUpdate }
+  { myProductsFetch, myStateUpdate }
 )(MyShelf);
