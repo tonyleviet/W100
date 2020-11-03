@@ -82,5 +82,8 @@
     "webdriverio": "^4.14.1"
   },
   "keywords": [],
-  "description": "Shopping cart"
+  "description": "Shopping cart",
+  "engines": {
+    "node": "12.19.0"
+  }
 }
