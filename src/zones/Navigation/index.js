@@ -7,5 +7,5 @@ const Navigation = () => (
         <Linker />
     </div>)
 
-export default Navigation
+export default Navigation  
 export { Switcher }

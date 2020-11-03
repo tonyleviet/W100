@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { Carousel } from 'react-responsive-carousel';
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
-//import './ProductMedia.css';
+import './ProductMedia.css';
 
 class ProductMedia extends Component {
 
@@ -13,20 +13,20 @@ class ProductMedia extends Component {
     }
 
     render() {
+        const product = this.props.product;
+        if (!product.imageUrls) {
+            product.imageUrls = [];
+        }
         return (
             <Carousel>
-                <div>
-                    <img src="http://react-responsive-carousel.js.org/assets/1.jpeg" />
-                    <p className="legend">Legend 1</p>
-                </div>
-                <div>
-                    <img src="http://react-responsive-carousel.js.org/assets/2.jpeg" />
-                    <p className="legend">Legend 2</p>
-                </div>
-                <div>
-                    <img src="http://react-responsive-carousel.js.org/assets/3.jpeg" />
-                    <p className="legend">Legend 3</p>
-                </div>
+                {product.imageUrls.map((imageUrl, index) => {
+                    return (
+                        <div className={'product-image-big'}>
+                            <img  src={imageUrl} />
+                        {/*     <p className="legend"></p> */}
+                        </div>
+                    )
+                })}
             </Carousel>
         );
     }

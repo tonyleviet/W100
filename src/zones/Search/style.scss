@@ -1,0 +1,17 @@
+.box-select-filter {
+  margin: 0 5px;
+  .display-selected-filter {
+    color: white;
+    display: inline-block;
+    min-width: 155px;
+  }
+
+  .choose-location {
+    display: inline-block;
+    margin: 0 5px;
+    #btn-ChooseLocation{
+      background: none;
+      text-decoration: underline;
+    }
+  }  
+}

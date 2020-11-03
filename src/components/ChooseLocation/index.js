@@ -12,7 +12,9 @@ class ChooseLocation extends Component {
         districtOfCity: [],
         show: false,
         selectedCity: 0,
-        selectedDistrict: 0
+        selectedDistrict: 0,
+        selectedCityName: '',
+        selectedDistrictName: ''
     };
 
     constructor(props) {
@@ -31,6 +33,15 @@ class ChooseLocation extends Component {
 
             SettingService.getCities().then(cities => {
                 self.setState({ cities: cities });
+                console.log('componentDidMount cities', cities);
+                if (self.props.defaultCity) {
+                    var defaultCity = cities.filter(x => x.value == self.props.defaultCity);
+                    console.log('componentDidMount defaultCity', defaultCity);
+                    if (defaultCity.length > 0)
+                        self.setState({ selectedCityName: defaultCity[0].label });
+                } else {
+                    self.setState({ selectedCityName: cities[0].label });
+                }
             });
             SettingService.getDistricts().then(districts => {
 
@@ -40,9 +51,20 @@ class ChooseLocation extends Component {
                 }
                 self.setState({ districts: districts });
                 if (self.props.defaultCity) {
-                    self.setState({ districtOfCity: districts.filter(x => x.CityID == self.props.defaultCity) });
+                    var districtOfCity = districts.filter(x => x.CityID == self.props.defaultCity);
+                    self.setState({ districtOfCity: districtOfCity });
+                    console.log('componentDidMount districtOfCity', districtOfCity);
+                    if (self.props.defaultDistrict) {
+                        var defaultDistrict = districtOfCity.filter(x => x.value == self.props.defaultDistrict);
+                        if (defaultDistrict.length > 0)
+                            self.setState({ selectedDistrictName: defaultDistrict[0].label });
+                    } else {
+                        self.setState({ selectedDistrictName: districtOfCity[0].label });
+                    }
                 } else {
-                    self.setState({ districtOfCity: districts.filter(x => x.CityID == 0) });
+                    var districtOfCity = districts.filter(x => x.CityID == 0);
+                    self.setState({ districtOfCity: districtOfCity });
+                    self.setState({ selectedDistrictName: districtOfCity[0].label });
                 }
 
             })
@@ -50,6 +72,7 @@ class ChooseLocation extends Component {
 
             this.setState({ selectedCity: this.props.defaultCity });
             this.setState({ selectedDistrict: this.props.defaultDistrict });
+
         });
 
     }
@@ -65,21 +88,46 @@ class ChooseLocation extends Component {
     handleShow = () => this.setShow(true);
     handleClose = () => this.setShow(false);
     handleSaveChange() {
-        var filters = { selectedCity: this.state.selectedCity, selectedDistrict: this.state.selectedDistrict };
+        var filters = {
+            selectedCityName: this.state.selectedCityName,
+            selectedCity: this.state.selectedCity,
+            selectedDistrictName: this.state.selectedDistrictName,
+            selectedDistrict: this.state.selectedDistrict
+        };
         console.log('handleSaveChange update filter', filters);
+
         this.props.handleChooseLocation(filters);
         this.setShow(false);
     }
     updateFilterCity(selectedCity) {
-        console.log('ChooseLocation updateFilterCity', selectedCity.value);
+        console.log('ChooseLocation updateFilterCity', selectedCity.value, selectedCity.name);
         var districtOfCity = this.state.districts.filter(x => x.CityID == selectedCity.value);
         this.setState({ districtOfCity: districtOfCity });
         console.log('ChooseLocation districtOfCity', districtOfCity);
-        this.setState({ selectedCity: parseInt(selectedCity.value) });
+        var selectedCityID = parseInt(selectedCity.value);
+        var selectedDistrictID = parseInt(districtOfCity[0].value);
+        this.setState(
+            {
+                selectedCity: selectedCityID,
+                selectedCityName: selectedCity[selectedCity.selectedIndex].text
+            });
+
+        this.setState(
+            {
+                selectedDistrict: selectedDistrictID,
+                selectedDistrictName: districtOfCity[0].label
+            });
+
+        localStorage.setItem('selectedCity', selectedCityID);
+        localStorage.setItem('selectedDistrict', selectedDistrictID);
         //stateUpdate({ prop: 'selectedCity', value: selectedCity.value })
     }
     updateFilterDistrict(selectedDistrict) {
-        this.setState({ selectedDistrict: parseInt(selectedDistrict.value) });
+        console.log('ChooseLocation updateFilterCity', selectedDistrict.value, selectedDistrict.selectValue);
+        var selectedDistrictID = parseInt(selectedDistrict.value);
+        localStorage.setItem('selectedDistrict', selectedDistrictID);
+        this.setState({ selectedDistrict: selectedDistrictID });
+        this.setState({ selectedDistrictName: selectedDistrict[selectedDistrict.selectedIndex].text });
         //stateUpdate({ prop: 'selectedDistrict', value: selectedDistrict.value })
     }
 
@@ -87,9 +135,9 @@ class ChooseLocation extends Component {
         const { cities, districtOfCity, show } = this.state;
 
         return (
-            <>
+            <div className={'choose-location'}>
                 <div>
-                    <Button variant="primary" onClick={this.handleShow}> Launch demo modal</Button>
+                    <Button variant="primary" id="btn-ChooseLocation" onClick={this.handleShow}> Change</Button>
                 </div>
                 <Modal show={show} onHide={this.handleClose} animation={false} fade={0}  >
                     <Modal.Header closeButton>
@@ -117,7 +165,7 @@ class ChooseLocation extends Component {
                         <Button variant="primary" onClick={this.handleSaveChange}> Save Changes </Button>
                     </Modal.Footer>
                 </Modal>
-            </>
+            </div>
 
         );
     }

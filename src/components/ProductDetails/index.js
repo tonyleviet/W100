@@ -39,7 +39,7 @@ class Product extends Component<Props> {
                     Back
                 </button>
                 <section className="media-section">
-                    <ProductMedia />
+                    <ProductMedia product={this.props.product} />
                 </section>
                 <section className="details-section">
                     <ProductHeader product={this.props.product} />

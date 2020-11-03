@@ -5,4 +5,22 @@
         display: block;
 
     }
+    .box-thumbnail{
+        display: inline-block;
+        position: relative;
+        margin: 10px;
+        .box-close{
+            position: absolute;
+            display: block;
+            top: 5px;
+            right: 5px;
+            cursor: pointer;
+            border: 1px solid;
+            background-color: white;        
+            button{
+                width: 20px;
+                height: 20px;
+            }
+        }
+    }
 }

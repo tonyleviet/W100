@@ -2,7 +2,7 @@ import md5 from 'md5';
 import firebase from 'firebase/app';
 import 'firebase/auth';
 import "firebase/firestore";
-
+import { default as UUID } from "node-uuid";
 import { FirebaseApp } from "./FirebaseApp";
 class FirebaseService {
   /* Initialize Firebase */
@@ -22,6 +22,7 @@ class FirebaseService {
     price, phone, address, description, color, size, active) {
 
     const datetime = new Date();
+    description = description || '';
     let productToAdd = {
       userId, imageUrls, city, cityName, district, districtName, name,
       price, phone, address, description, color, size, active, lastUpdate: datetime
@@ -34,6 +35,7 @@ class FirebaseService {
   static setProduct(id, userId, imageUrls, city, cityName, district, districtName, name,
     price, phone, address, description, color, size, active) {
     //  console.log("setProduct :",productToUpdate);
+    description = description || '';
     const datetime = new Date();
     let productToUpdate = {
       userId, imageUrls, city, cityName, district, districtName, name,
@@ -72,7 +74,7 @@ class FirebaseService {
     const last30Days = new Date(year, month - 1, day) // Subtract 1 MONTH
     const nextTotalItems = (pageIndex) * pageSize;
     //console.log("activeProductsCollection skip:", nextTotalItems, " pageSize:", pageSize)
-    console.log('service activeProductsCollection', pageIndex, '--', pageSize, 'cityID:', cityID, ' districtID: ', districtID ,' nextTotalItems-' , nextTotalItems);
+    console.log('service activeProductsCollection', pageIndex, '--', pageSize, 'cityID:', cityID, ' districtID: ', districtID, ' nextTotalItems-', nextTotalItems);
     //const total =   this.productsCollection().get().then(res => console.log(res.size));
     //console.log("total", total);
     //if(nextTotalItems>total){
@@ -100,7 +102,7 @@ class FirebaseService {
   }
   static productsCollectionByUser(userId, pageIndex, pageSize) {
     const nextTotalItems = (pageIndex) * pageSize;
-    console.log("productsCollectionByUser nextTotalItems", nextTotalItems,' userId ', userId);
+    console.log("productsCollectionByUser nextTotalItems", nextTotalItems, ' userId ', userId);
     return this.productsCollection()
       .where("userId", "==", '109490188028640126173')
       .orderBy("lastUpdate", "desc")
@@ -154,7 +156,7 @@ class FirebaseService {
 // used only to generate a unique id
 // ideally, the server would generate this unique id
 function imageId() {
-  const uniqueID = 1;
+  const uniqueID = UUID.v4();;
   const date = Date.parse(Date());
   return md5(`${uniqueID}-${date}`);
 }

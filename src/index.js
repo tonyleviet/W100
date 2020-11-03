@@ -13,7 +13,7 @@ import i18n from './i18n';
 
 ReactDOM.render(
   <Root i18n={i18n}>
-       <Routes />
+       <App />
   </Root>,
   document.getElementById('root')  
 );

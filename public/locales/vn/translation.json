@@ -1,5 +1,7 @@
 {
   "title": {
+    "home":"Trang Chủ",
+    "myproducts":"Quản Lý Sản Phẩm",
     "addProduct":"Thêm mới",
     "editProduct":"Chỉnh sửa"
   },

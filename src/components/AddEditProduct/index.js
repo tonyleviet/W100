@@ -13,7 +13,13 @@ type Props = {};
 class AddEditProduct extends Component<Props> {
     state = {
         images: {},
-        product: { imageUrls: [] },
+        product: {
+            imageUrls: [],
+            city: 0,
+            cityName: "",
+            district: 0,
+            districtName: ""
+        },
         cities: [],
         districts: []
     };
@@ -36,11 +42,15 @@ class AddEditProduct extends Component<Props> {
             });
 
         }
+        else {
+
+        }
 
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
 
         this.onFormSubmit = this.onFormSubmit.bind(this);
+        this.removeImage = this.removeImage.bind(this);
         this.changeSelectBox = this.changeSelectBox.bind(this);
 
 
@@ -49,15 +59,38 @@ class AddEditProduct extends Component<Props> {
         const { t } = this.props;
         SettingService.getCities().then(cities => {
             console.log('componentDidMount getCities', cities);
-            cities.unshift({ label: t('label.requireCity'), value: 0 });
+            //cities.unshift({ label: t('label.requireCity'), value: 0 });
             this.setState({ cities: cities });
         });
         SettingService.getDistricts().then(districts => {
             this.setState({ districts: districts });
 
             console.log('test filter', districts.filter(x => x.CityID == 12));
+            if (!this.state.product.city) {
+                var selectedCity = localStorage.getItem('selectedCity');
+                var selectedDistrict = localStorage.getItem('selectedDistrict');
+                //selectedCity = selectedCity || 0;
+                //selectedDistrict = selectedDistrict || 0;
+                console.log('AddEditProduct default selectedCitt ', selectedCity, ' selectedDistrict ', selectedDistrict);
+                var selectDistricts = districts.filter(x => x.CityID == selectedCity);
+                var cityName = selectDistricts[0].CityName;
+                var districtName = selectDistricts.filter(x => x.value == selectedDistrict)[0].districtName;
+
+                this.setState({
+                    product:
+                    {
+                        ...this.state.product,
+                        cityName: cityName,
+                        districtName: districtName,
+                        city: parseInt(selectedCity),
+                        district: parseInt(selectedDistrict),
+                    }
+                });
+            }
         });
+
         console.log('AddEditProduct state', this.state);
+
     }
 
 
@@ -79,30 +112,52 @@ class AddEditProduct extends Component<Props> {
         })
 
     }
+    removeImage(imageIndex) {
+        console.log('removeImage imageIndex: ', imageIndex);
+        const imageUrls = this.state.product.imageUrls;
+
+        if (imageIndex !== -1) {
+            imageUrls.splice(imageIndex, 1);
+            this.setState({
+                product: {
+                    ...this.state.product,
+                    [imageUrls]: imageUrls
+                }
+            })
+        }
+
+
+    }
     changeSelectBox(event) {
+        console.log('changeSelectBox event: ', event);
         if (event.name == 'city') {
             const selectedCity = this.state.cities[event.selectedIndex];
-            //console.log('changeSelectBox selectedCity', selectedCity);
-            this.setState({ ...this.state.product, city: selectedCity.value });
-            this.setState({ ...this.state.product, cityName: selectedCity.label });
-            const selectedDistrict = this.state.districts[10];
+            console.log('changeSelectBox selectedCity', selectedCity);
+            const selectedDistrict = this.state.districts.filter(x => x.CityID == parseInt(selectedCity.value))[0]
 
-            this.setState({ ...this.state.product, district: selectedDistrict.value });
-            this.setState({ ...this.state.product, districtName: selectedDistrict.label });
-
+            this.setState({
+                product:
+                {
+                    ...this.state.product,
+                    city: selectedCity.value,
+                    cityName: selectedCity.label,
+                    district: selectedDistrict.value,
+                    districtName: selectedDistrict.label
+                }
+            });
         }
         else if (event.name == 'district') {
-            const selectedDistrict = this.state.districts[event.selectedIndex];
-            //console.log('changeSelectBox selectedDistrict', selectedDistrict);
-            this.setState({ ...this.state.product, district: selectedDistrict.value });
-            this.setState({ ...this.state.product, districtName: selectedDistrict.label });
-
+            const selectedDistrict = this.state.districts.filter(x => x.value == parseInt(event.value))[0]
+            this.setState({
+                product: {
+                    ...this.state.product,
+                    district: selectedDistrict.value,
+                    districtName: selectedDistrict.label
+                }
+            });
         }
     }
-    handleSubmit(event) {
-        event.preventDefault();
-        this.onFormSubmit(this.state);
-    }
+
 
 
     productSave = ({ id = null, productUserId, imageUrls, city, cityName, district, districtName, name,
@@ -115,9 +170,12 @@ class AddEditProduct extends Component<Props> {
     };
     uploadImages(imageSources) {
         const maptoArray = Object.keys(imageSources).map((key) => imageSources[key]);
+        //console.log('uploadImages(imageSources) imageSources ' , imageSources);
+        //console.log('uploadImages(imageSources) maptoArray ' , maptoArray);
+        //return maptoArray;
         const imageRequests = maptoArray.map((imageBase64) => {
             return new Promise((resolve, reject) => {
-
+                console.log('uploadImages new Promise imageBase64', imageBase64);
                 FirebaseService.uploadImageBase64(imageBase64).then(uploadedFile => {
                     console.log('uploadedFile.downloadURL', uploadedFile);
                     uploadedFile.ref.getDownloadURL().then(resultFilePath => {
@@ -140,17 +198,44 @@ class AddEditProduct extends Component<Props> {
                 return data
             })
     };
+
+    handleSubmit(event) {
+        console.log('handleSubmit event', event);
+        const form = event.currentTarget;
+        console.log('handleSubmit event form.checkValidity()', form.checkValidity());
+        console.log('handleSubmit event this.state', this.state);
+
+        if (form.checkValidity() === false ||
+            this.state.product.city == 0 || this.state.product.district == 0 || Object.keys(this.state.images).length === 0) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        else {
+            this.onFormSubmit(this.state);
+        }
+        event.preventDefault();
+        //setValidated(true);
+    }
+
     onFormSubmit(data) {
-        let apiUrl;
+
+
         console.log('onFormSubmit data', data);
+
         this.uploadImages(data.images).then(imagePaths => {
             console.log('onFormSubmit reponse imagePaths', imagePaths);
-            data.product.imageUrls = imagePaths;
+            if (!data.product.imageUrls) {
+                data.product.imageUrls = [];
+            }
+            data.product.imageUrls = data.product.imageUrls.concat(imagePaths);
             const { id, userId, imageUrls, city, cityName, district, districtName, name, price,
-                phone, address, description, color, size, active } = data.product;
+                phone, address, description } = data.product;
             //Actions.loadingLightbox();
             console.log("productSaveWithImage-" + id + "-" + userId + "-");
-            //return;
+            let color = '';
+            let size = '';
+            let active = true;
+            //return true;
             if (!id) {
                 FirebaseService.addProduct('userid', imageUrls, city, cityName, district, districtName, name,
                     price, phone, address, description, color, size, active);
@@ -158,11 +243,22 @@ class AddEditProduct extends Component<Props> {
                 FirebaseService.setProduct(id, userId, imageUrls, city, cityName, district, districtName, name,
                     price, phone, address, description, color, size, active);
             }
+            this.setState({
+                product: {
+                    ...this.state.product,
+                    [imageUrls]: data.product.imageUrls
+                }
+            })
+
+            this.setState({ images: {} })
         });
     }
 
+
+
     render() {
-        console.log('render AddEditProduct props', this.props, 'this.state ', this.state);
+        console.log('render AddEditProduct this.props', this.props);
+        console.log('render AddEditProduct this.state ', this.state);
         const { t } = this.props;
 
         const { images, cities, districts, product } = this.state;
@@ -182,21 +278,22 @@ class AddEditProduct extends Component<Props> {
         return (
             <div className="main-page">
                 {pageTitle}
-                <Row>
-                    <Col sm={6}>
-                        <Form onSubmit={this.handleSubmit}>
+
+                <Form onSubmit={this.handleSubmit}>
+                    <Row>
+                        <Col sm={6}>
                             <Form.Group controlId="city">
                                 <Form.Label>{t('label.city')}</Form.Label>
-                                <Selectbox name="city" value={product.city} options={cities} handleOnChange={this.changeSelectBox}></Selectbox>
+                                <Selectbox required={true} name="city" value={product.city} options={cities} handleOnChange={this.changeSelectBox}></Selectbox>
                             </Form.Group>
                             <Form.Group controlId="city">
                                 <Form.Label>{t('label.district')}</Form.Label>
-                                <Selectbox name="district" value={product.district} options={districts.filter(x => x.CityID == product.city)}
+                                <Selectbox required={true} name="district" value={product.district} options={districts.filter(x => x.CityID == product.city)}
                                     handleOnChange={this.changeSelectBox} placeHolder={t('label.requireDistrict')} ></Selectbox>
                             </Form.Group>
                             <Form.Group controlId="name">
                                 <Form.Label> {t('label.name')}</Form.Label>
-                                <Form.Control
+                                <Form.Control required
                                     type="text"
                                     name="name"
                                     value={product.name}
@@ -206,7 +303,7 @@ class AddEditProduct extends Component<Props> {
 
                             <Form.Group controlId="price">
                                 <Form.Label>{t('label.price')}</Form.Label>
-                                <Form.Control
+                                <Form.Control required
                                     type="text"
                                     name="price"
                                     value={product.price}
@@ -215,7 +312,7 @@ class AddEditProduct extends Component<Props> {
                             </Form.Group>
                             <Form.Group controlId="phone">
                                 <Form.Label>{t('label.phone')}</Form.Label>
-                                <Form.Control
+                                <Form.Control required
                                     type="text"
                                     name="phone"
                                     value={product.phone}
@@ -224,7 +321,7 @@ class AddEditProduct extends Component<Props> {
                             </Form.Group>
                             <Form.Group controlId="address">
                                 <Form.Label>{t('label.address')}</Form.Label>
-                                <Form.Control
+                                <Form.Control required
                                     type="text"
                                     name="address"
                                     value={product.address}
@@ -236,10 +333,13 @@ class AddEditProduct extends Component<Props> {
                                 <Form.Control
                                     as="textarea" rows="3"
                                     name="description"
+                                    defaultValue=""
                                     value={product.description}
                                     onChange={this.handleChange}
                                     placeholder={t('label.description')} />
                             </Form.Group>
+                        </Col>
+                        <Col >
                             <Form.Group controlId="images">
                                 <Form.Label>{t('label.images')}</Form.Label>
                                 <MultiImageInput
@@ -255,29 +355,28 @@ class AddEditProduct extends Component<Props> {
                                 <div style={{
                                     position: 'relative',
                                 }}>
-                                    {product.imageUrls.map((imageUrl) => <div> <img style={{ width: '100%' }} key={imageUrl} src={imageUrl} />
-                                        <div
-                                            style={{
-                                                position: 'absolute',
-                                                right: 5,
-                                                top: 5,
+                                    {product.imageUrls.map((imageUrl, index) => {
+                                        return (
+                                            <div className={'box-thumbnail'} key={'box-thumbnail-' + index} >
+                                                <img style={{ maxWidth: '100px', maxHeight: "100px" }} key={'img-' + index} src={imageUrl} />
+                                                <div className={'box-close'}
+                                                >
+                                                    <button type="button" style={{ color: 'black' }} onClick={() => { this.removeImage(index) }} >X</button>
+                                                </div>
 
-                                            }}
-                                        >
-                                            <span style={{ color: 'black' }}>X</span>
-                                        </div>
-
-                                    </div>)}
+                                            </div>
+                                        )
+                                    })}
                                 </div>
                             </Form.Group>
-                            <Form.Group>
-                                <Form.Control type="hidden" name="id" value={product.id} />
-                                <Button variant="success" type="submit">{t('button.save')}</Button>
-                            </Form.Group>
-                        </Form>
-                    </Col>
-                </Row>
-            </div>
+                        </Col>
+                        <Form.Group>
+                            <Form.Control type="hidden" name="id" value={product.id} />
+                            <Button variant="success" type="submit">{t('button.save')}</Button>
+                        </Form.Group>
+                    </Row>
+                </Form>
+            </div >
         )
     }
 }

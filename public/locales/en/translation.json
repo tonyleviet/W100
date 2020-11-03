@@ -1,12 +1,14 @@
 {
   "title": {
-    "addProduct":"Thêm mới",
+    "home":"Home",
+    "myproducts":"Manage Product",
+    "addProduct":"Add New", 
     "editProduct":"Update"
   },
   "product": {
-    "name": "Tên sản phẩm",
-    "description": "Mô tả",
-    "images": "Hình ảnh"
+    "name": "Name",
+    "description": "Description",
+    "images": "Images"
   },  
   "label": {
     "name": "Tên sản phẩm",

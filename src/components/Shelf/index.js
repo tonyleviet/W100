@@ -3,9 +3,12 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
 import { fetchProducts, stateUpdate } from '../../services/shelf/actions';
+import { CACHE_FILTER_KEY } from '../../services/Constants';
 import { FirebaseService } from '../../services/FirebaseService';
+
 import { AuthService } from '../../services/AuthService';
 import InfiniteScroll from "react-infinite-scroll-component";
+
 import { GoogleLogin } from 'react-google-login';
 import { Button, Modal } from "react-bootstrap";
 import Spinner from '../Spinner';
@@ -29,7 +32,7 @@ class Shelf extends Component {
     selectedCity: 0,
     selectedDistrict: 0,
     pageIndex: 1,
-    pageSize: 5,
+    pageSize: 4,
     totalProduct: 0,
     mounted: false
   };
@@ -48,12 +51,14 @@ class Shelf extends Component {
         (this.props.defaultDistrict && this.props.defaultDistrict != this.state.selectedDistrict)) {
         this.setState({ selectedCity: this.props.defaultCity });
         this.setState({ selectedDistrict: this.props.defaultDistrict });
+
         this.wait(1000).then(() => {
           console.log('componentDidMount fetchProducts');
           this.fetchProducts();
         });
       }
     }
+    
   }
   componentWillUnmount() {
     this.mounted = false;
@@ -69,7 +74,7 @@ class Shelf extends Component {
   fetchProducts = () => {
     console.log('fetchProducts begin');
     this.productsTotal(this.state.selectedCity, this.state.selectedDistrict).then(r => {
-      console.log('productsTotal', r,' currentTotal', this.state.pageSize * this.state.pageIndex);
+      console.log('productsTotal', r, ' currentTotal', this.state.pageSize * this.state.pageIndex);
       this.setState({ totalProduct: r });
       if (this.state.pageSize * this.state.pageIndex > r) {
         this.setState({ hasMore: false });
@@ -80,6 +85,32 @@ class Shelf extends Component {
     this.props.fetchProducts(this.state.pageIndex, this.state.pageSize, this.state.selectedCity, this.state.selectedDistrict, () => {
       //this.setState({ isLoading: false });
     });
+  }
+  refreshProducts = () => {
+    const filterRaw = localStorage.getItem(CACHE_FILTER_KEY);
+    console.log('refreshProducts update filter', JSON.parse(filterRaw));
+    const filters = JSON.parse(filterRaw);
+
+
+    this.setState({ pageIndex: 1 });
+
+    this.setState({ hasMore: true });
+    console.log('refreshProducts begin');
+    this.productsTotal(filters.selectedCity, filters.selectedDistrict).then(r => {
+      console.log('productsTotal', r, ' currentTotal', this.state.pageSize);
+      this.setState({ totalProduct: r });
+      if (this.state.pageSize > r) {
+        this.setState({ hasMore: false });
+        return null;
+      }
+
+    });
+    this.props.fetchProducts(1, this.state.pageSize, filters.selectedCity, filters.selectedDistrict, () => {
+      this.setState({ selectedCity: filters.selectedCity });
+      this.setState({ selectedDistrict: filters.selectedDistrict });
+      //this.setState({ isLoading: false });
+    });
+
   }
   productsPage = (pageIndex, pageSize, cityID, districtID) => {
     console.log('productsPage querySnapshot', pageIndex, '--', pageSize, 'cityID:', cityID, ' districtID: ', districtID);
@@ -174,7 +205,7 @@ class Shelf extends Component {
     FirebaseService.signIn(response.wc.id_token, response.wc.access_token);
   };
   renderReactGoogle = () => {
-
+  
     return (
       <div>
         <GoogleLogin
@@ -237,17 +268,19 @@ class Shelf extends Component {
       <React.Fragment>
         {/*  {isLoading && <Spinner />} */}
 
-        <Filter handleFilter={this.handleFilter} defaultCity={selectedCity} defaultDistrict={selectedDistrict} />
-        <div className="shelf-container">
-          <ChooseLocation handleChooseLocation={this.handleChooseLocation} defaultCity={selectedCity} defaultDistrict={selectedDistrict} />
+        {/* <Filter handleFilter={this.handleFilter} defaultCity={selectedCity} defaultDistrict={selectedDistrict} /> */}
+        <div className="shelf-container" id="scrollableDiv">
+          {/* <ChooseLocation handleChooseLocation={this.handleChooseLocation} defaultCity={selectedCity} defaultDistrict={selectedDistrict} /> */}
           <ShelfHeader productsLength={totalProduct} />
-
+          <button id="btn-refresh" onClick={this.refreshProducts} style={{ visibility: "hidden" }}> Refresh </button>
           <InfiniteScroll
             dataLength={products.length}
             next={this.fetchMoreData}
             hasMore={hasMore}
+            refreshFunction={this.refreshProducts}
             loader={<h4>Loading...</h4>}
             scrollThreshold="200px"
+            className={'infinite-scroll-component-outer'}
           >
             <ProductList products={products} />
           </InfiniteScroll>

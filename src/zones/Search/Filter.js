@@ -2,16 +2,12 @@ import React, { Component, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { connect } from 'react-redux';
-import { updateFilters, stateUpdate } from '../../../services/filters/actions';
-import { SettingService } from '../../../services/SettingService';
-import { FirebaseService } from '../../../services/FirebaseService';
-import Checkbox from '../../Checkbox';
-import GithubStarButton from '../../github/StarButton';
-import Selectbox from '../../Selectbox';
-import './style.scss';
+import { updateFilters, stateUpdate } from '../../services/filters/actions';
+import { SettingService } from '../../services/SettingService';
+import Selectbox from '../../components/Selectbox';
 
 
-class Filter extends Component {
+class Filter extends Component { 
   state = {
     cities: [],
     districts: [],
@@ -29,41 +25,9 @@ class Filter extends Component {
 
     if (this.mounted == true) {
       SettingService.getCities().then(cities => {
-        if (!cities) {
-          FirebaseService.citiesCollection().get().then((querySnapshot) => {
-            const cityData = [];
-            cityData.push({ value: 0, label: 'Select a city', Order: 0 });
-            querySnapshot.forEach((doc) => {
-              const { CityID, City, Order } = doc.data();
-              cityData.push({ value: CityID, label: City, Order });
-            });
-            console.log('FirebaseService.settingsCollection cityData', cityData);
-            SettingService.storeCities(cityData);
-            this.setState({ cities: cityData });
-            //props.stateUpdate({prop:"cities",value: cityData});
-            //cities = cityData;
-          });
-        }
-        else {
-          this.setState({ cities: cities });
-        }
+        this.setState({ cities: cities });
       });
       SettingService.getDistricts().then(districts => {
-        if (!districts) {
-          FirebaseService.districtsCollection()
-            .get().then((querySnapshot) => {
-              const districtData = [];
-              districtData.push({ CityID: 0, City: '', value: 0, label: 'Select a city first', Order: 0 });
-              querySnapshot.forEach((doc) => {
-                const { CityID, City, DistrictID, District, Order } = doc.data();
-                districtData.push({ CityID, City, value: DistrictID, label: District, Order });
-              });
-              console.log('FirebaseService.settingsCollection districtData', districtData);
-              SettingService.storeDistricts(districtData);
-              //props.stateUpdate({prop:"districts", value: districtData});
-            });
-        }
-
         if (!districts) {
           districts = [];
           districts.push({ CityID: 0, City: '', value: 0, label: 'Select a city first', Order: 0 });

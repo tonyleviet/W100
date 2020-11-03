@@ -1,7 +1,8 @@
 .my-shelf-container {
   display: flex;
   flex-wrap: wrap;
-  /* width: 85%; */
+  width: 1200px;
+  margin: auto;
   min-height: 600px;
 
   &-header {
