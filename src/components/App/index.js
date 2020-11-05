@@ -19,10 +19,10 @@ const useStateWithLocalStorage = localStorageKey => {
 };
 
 const App = (props) => {
-  const [defaultDistrict, setDefaultDistrict] = useStateWithLocalStorage(
+  var [defaultDistrict, setDefaultDistrict] = useStateWithLocalStorage(
     'selectedDistrict'
   );
-  const [defaultCity, setDefaultCity] = useStateWithLocalStorage(
+  var [defaultCity, setDefaultCity] = useStateWithLocalStorage(
     'selectedCity'
   );
   if (!defaultDistrict) {

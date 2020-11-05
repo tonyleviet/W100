@@ -28,14 +28,19 @@ class Search extends Component {
         console.log('Search componentWillMount state', this.state);
         if (this.state.selectedDistrictName == "") {
             SettingService.getDistricts().then(districts => {
-                var defaultDistrict = districts.filter(x => x.value == this.props.defaultDistrict);
-                this.setState({ selectedDistrictName: defaultDistrict[0].label + ',' });
+                if(districts)
+                {
+                    var defaultDistrict = districts.filter(x => x.value == this.props.defaultDistrict);
+                    this.setState({ selectedDistrictName: defaultDistrict[0].label + ',' });
+                }
             });
         }
         if (this.state.selectedCityName == "") {
             SettingService.getCities().then(cities => {
-                var defaultCity = cities.filter(x => x.value == this.props.defaultCity);
-                this.setState({ selectedCityName: defaultCity[0].label });
+                if (cities) {
+                    var defaultCity = cities.filter(x => x.value == this.props.defaultCity);
+                    this.setState({ selectedCityName: defaultCity[0].label });
+                }
             });
         }
     }

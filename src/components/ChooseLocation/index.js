@@ -32,15 +32,17 @@ class ChooseLocation extends Component {
             var self = this;
 
             SettingService.getCities().then(cities => {
-                self.setState({ cities: cities });
-                console.log('componentDidMount cities', cities);
-                if (self.props.defaultCity) {
-                    var defaultCity = cities.filter(x => x.value == self.props.defaultCity);
-                    console.log('componentDidMount defaultCity', defaultCity);
-                    if (defaultCity.length > 0)
-                        self.setState({ selectedCityName: defaultCity[0].label });
-                } else {
-                    self.setState({ selectedCityName: cities[0].label });
+                if (cities) {
+                    self.setState({ cities: cities });
+                    console.log('componentDidMount cities', cities);
+                    if (self.props.defaultCity) {
+                        var defaultCity = cities.filter(x => x.value == self.props.defaultCity);
+                        console.log('componentDidMount defaultCity', defaultCity);
+                        if (defaultCity.length > 0)
+                            self.setState({ selectedCityName: defaultCity[0].label });
+                    } else {
+                        self.setState({ selectedCityName: cities[0].label });
+                    }
                 }
             });
             SettingService.getDistricts().then(districts => {
