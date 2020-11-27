@@ -38,10 +38,16 @@ class Login extends Component {
             if (rsSign.districtID) {
                 localStorage.setItem('selectedDistrict', rsSign.districtID);
             }
-
-            FirebaseService.signIn(response.wc.id_token, response.wc.access_token).then(rs => {
+            
+            FirebaseService.signIn(response.tokenId, response.accessToken).then(rs => {
                 console.log("FirebaseService.signIn rs", rs);
                 this.setState({ isUserLoggedIn: true });
+                AuthService.currentUser().then(user => {
+                    if (user) {
+                        console.log('Login constructor', user);
+                        this.setState({ currentUser: user });
+                    }
+                });
             });
         });
     };
@@ -57,7 +63,7 @@ class Login extends Component {
          </Link > */
         return (<div>
             {!this.state.isUserLoggedIn && (
-                <GoogleLogin className="google-login"
+                 <GoogleLogin className="google-login" 
                     clientId={FirebaseConfig.googleLoginKey}
                     scope="https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/photoslibrary"
                     //scope="[https://www.googleapis.com/auth/userinfo.email, https://www.googleapis.com/auth/userinfo.profile, openid, https://www.googleapis.com/auth/drive.readonly]"
@@ -65,14 +71,15 @@ class Login extends Component {
                     onFailure={this.responseGoogle}
                 >
                     <span > Login with Google</span>
-                </GoogleLogin>
+                </GoogleLogin> 
+            
 
             )}
             {
                 this.state.isUserLoggedIn && (
-                    <GoogleLogout
+                    <GoogleLogout 
                         render={renderProps => (
-                            <button
+                            <button 
                                 className="logout-button"
                                 onClick={renderProps.onClick}
                             >

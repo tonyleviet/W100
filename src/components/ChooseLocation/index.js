@@ -3,6 +3,7 @@ import { Modal, Button } from 'react-bootstrap';
 import { connect } from 'react-redux';
 import { updateFilters, stateUpdate } from '../../services/filters/actions';
 import { SettingService } from '../../services/SettingService';
+
 import Selectbox from '../Selectbox';
 
 class ChooseLocation extends Component {
@@ -19,12 +20,12 @@ class ChooseLocation extends Component {
 
     constructor(props) {
         super(props)
-        console.log('Filter Component', props);
-
+        console.log('ChooseLocation Component', props);
+        
         this.handleSaveChange = this.handleSaveChange.bind(this);
     }
     componentDidMount() {
-        this.wait(1000).then(() => {
+        this.wait(4000).then(() => {
 
             if (this.props.defaultCity == 0 && this.props.defaultDistrict == 0) {
                 this.setShow(true);
@@ -68,12 +69,13 @@ class ChooseLocation extends Component {
                     self.setState({ districtOfCity: districtOfCity });
                     self.setState({ selectedDistrictName: districtOfCity[0].label });
                 }
-
             })
 
 
             this.setState({ selectedCity: this.props.defaultCity });
             this.setState({ selectedDistrict: this.props.defaultDistrict });
+            localStorage.setItem('selectedCity', this.props.defaultCity);
+            localStorage.setItem('selectedDistrict', this.props.defaultDistrict );
 
         });
 

@@ -29,10 +29,10 @@ class Shelf extends Component {
     isLoading: false,
     loadMore: true,
     hasMore: true,
-    selectedCity: 0,
+    selectedCity: 0, 
     selectedDistrict: 0,
     pageIndex: 1,
-    pageSize: 4,
+    pageSize: 8,
     totalProduct: 0,
     mounted: false
   };

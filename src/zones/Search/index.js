@@ -25,29 +25,36 @@ class Search extends Component {
     }
 
     componentWillMount() {
-        console.log('Search componentWillMount state', this.state);
-        if (this.state.selectedDistrictName == "") {
-            SettingService.getDistricts().then(districts => {
-                if(districts)
-                {
-                    var defaultDistrict = districts.filter(x => x.value == this.props.defaultDistrict);
-                    this.setState({ selectedDistrictName: defaultDistrict[0].label + ',' });
-                }
-            });
-        }
-        if (this.state.selectedCityName == "") {
-            SettingService.getCities().then(cities => {
-                if (cities) {
-                    var defaultCity = cities.filter(x => x.value == this.props.defaultCity);
-                    this.setState({ selectedCityName: defaultCity[0].label });
-                }
-            });
-        }
+        this.wait(3000).then(() => { 
+            console.log('Search componentWillMount state', this.state);
+            if (this.state.selectedDistrictName == "") {
+                SettingService.getDistricts().then(districts => {
+                    if(districts)
+                    {
+                        var defaultDistrict = districts.filter(x => x.value == this.props.defaultDistrict);
+                        this.setState({ selectedDistrictName: defaultDistrict[0].label + ',' });
+                    }
+                });
+            }
+            if (this.state.selectedCityName == "") {
+                SettingService.getCities().then(cities => {
+                    if (cities) {
+                        var defaultCity = cities.filter(x => x.value == this.props.defaultCity);
+                        this.setState({ selectedCityName: defaultCity[0].label });
+                    }
+                });
+            }
+        });
+        
     }
     onSearch = () => {
 
     }
-
+    wait(timeout) {
+        return new Promise(resolve => {
+            setTimeout(resolve, timeout);
+        });
+    }
     handleFilter = (filters) => {
         console.log('handleFilter update filter', filters);
         var link = document.getElementById("btn-ChooseLocation");

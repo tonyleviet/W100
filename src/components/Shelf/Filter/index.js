@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import { connect } from 'react-redux';
 import { updateFilters, stateUpdate } from '../../../services/filters/actions';
-import { SettingService } from '../../../services/SettingService';
+import { SettingService }  from '../../../services/SettingService';
 import { FirebaseService } from '../../../services/FirebaseService';
 import Checkbox from '../../Checkbox';
 import GithubStarButton from '../../github/StarButton';
@@ -23,6 +23,7 @@ class Filter extends Component {
     super(props)
     console.log('Filter Component', props);
 
+
   }
   componentDidMount() {
     this.mounted = true;
@@ -37,7 +38,7 @@ class Filter extends Component {
               const { CityID, City, Order } = doc.data();
               cityData.push({ value: CityID, label: City, Order });
             });
-            console.log('FirebaseService.settingsCollection cityData', cityData);
+            console.log('Filter componentDidMount FirebaseService.settingsCollection cityData', cityData);
             SettingService.storeCities(cityData);
             this.setState({ cities: cityData });
             //props.stateUpdate({prop:"cities",value: cityData});

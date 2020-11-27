@@ -71,11 +71,11 @@ class AddEditProduct extends Component<Props> {
                 var selectedDistrict = localStorage.getItem('selectedDistrict');
                 //selectedCity = selectedCity || 0;
                 //selectedDistrict = selectedDistrict || 0;
-                console.log('AddEditProduct default selectedCitt ', selectedCity, ' selectedDistrict ', selectedDistrict);
-                var selectDistricts = districts.filter(x => x.CityID == selectedCity);
-                var cityName = selectDistricts[0].CityName;
-                var districtName = selectDistricts.filter(x => x.value == selectedDistrict)[0].districtName;
-
+               
+                var selectDistricts = districts.filter(x => x.CityID ==  parseInt(selectedCity));
+                var cityName = selectDistricts[0].City;
+                var districtName = selectDistricts.filter(x => x.value == parseInt(selectedDistrict))[0].label;
+                console.log('AddEditProduct selectDistricts ', selectDistricts);
                 this.setState({
                     product:
                     {
@@ -221,7 +221,7 @@ class AddEditProduct extends Component<Props> {
 
 
         console.log('onFormSubmit data', data);
-
+        return;
         this.uploadImages(data.images).then(imagePaths => {
             console.log('onFormSubmit reponse imagePaths', imagePaths);
             if (!data.product.imageUrls) {
