@@ -63,7 +63,7 @@ class Login extends Component {
          </Link > */
         return (<div>
             {!this.state.isUserLoggedIn && (
-                 <GoogleLogin className="google-login" 
+                 <GoogleLogin className="google-login"  style={{display:'none'}}
                     clientId={FirebaseConfig.googleLoginKey}
                     scope="https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/photoslibrary"
                     //scope="[https://www.googleapis.com/auth/userinfo.email, https://www.googleapis.com/auth/userinfo.profile, openid, https://www.googleapis.com/auth/drive.readonly]"
@@ -80,7 +80,7 @@ class Login extends Component {
                     <GoogleLogout 
                         render={renderProps => (
                             <button 
-                                className="logout-button"
+                                className="logout-button" style={{display:'none'}}
                                 onClick={renderProps.onClick}
                             >
                                 Log Out {this.state.currentUser.Name}
