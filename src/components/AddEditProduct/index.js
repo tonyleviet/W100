@@ -4,6 +4,7 @@ import { withTranslation, Trans } from "react-i18next";
 import { Row, Form, Col, Button } from 'react-bootstrap';
 import { SettingService } from '../../services/SettingService';
 import { FirebaseService } from '../../services/FirebaseService';
+import { AuthService } from '../../services/AuthService';
 import Selectbox from '../Selectbox';
 import { fetchProduct } from '../../services/addEditProduct/addEditProductActions';
 import MultiImageInput from 'react-multiple-image-input';
@@ -21,7 +22,8 @@ class AddEditProduct extends Component<Props> {
             districtName: ""
         },
         cities: [],
-        districts: []
+        districts: [],
+        currentUser: {},
     };
 
     constructor(props) {
@@ -43,7 +45,12 @@ class AddEditProduct extends Component<Props> {
 
         }
         else {
-
+            AuthService.currentUser().then(user => {
+                if (user) {
+                  console.log('Routes componentWillMount ', user)
+                  this.setState({ currentUser: user });
+                }
+              });
         }
 
         this.handleChange = this.handleChange.bind(this);
@@ -142,7 +149,7 @@ class AddEditProduct extends Component<Props> {
                     city: selectedCity.value,
                     cityName: selectedCity.label,
                     district: selectedDistrict.value,
-                    districtName: selectedDistrict.label
+                    districtName: selectedDistrict.label 
                 }
             });
         }
@@ -221,7 +228,8 @@ class AddEditProduct extends Component<Props> {
 
 
         console.log('onFormSubmit data', data);
-        return;
+        console.log('onFormSubmit currentUser', this.state.currentUser);
+        //return;
         this.uploadImages(data.images).then(imagePaths => {
             console.log('onFormSubmit reponse imagePaths', imagePaths);
             if (!data.product.imageUrls) {
@@ -235,9 +243,10 @@ class AddEditProduct extends Component<Props> {
             let color = '';
             let size = '';
             let active = true;
+            
             //return true;
             if (!id) {
-                FirebaseService.addProduct('userid', imageUrls, city, cityName, district, districtName, name,
+                FirebaseService.addProduct(this.state.currentUser.Id, imageUrls, city, cityName, district, districtName, name,
                     price, phone, address, description, color, size, active);
             } else {
                 FirebaseService.setProduct(id, userId, imageUrls, city, cityName, district, districtName, name,

@@ -40,6 +40,7 @@ export const myProductsPage = (pageIndex, pageSize) => {
   return new Promise((resolve, reject) => {
     AuthService.currentUser().then(user => {
       var userId = user.Id;
+     console.log('myProductsPage user', user);
       FirebaseService.productsCollectionByUser(userId, pageIndex, pageSize)
         //.get()
         //.then((querySnapshot) => {
@@ -86,7 +87,7 @@ export const myProductsFetch = (pageIndex, pageSize) => {
               color, size, active, city, cityName, district, districtName, lastUpdate: lastUpdatedDate
             });
           });
-
+          console.log('myProductsFetch myproducts', products);
           dispatch({
             type: MY_PRODUCTS_FETCH_SUCCESS,
             payload: { loading: false, myproducts: products, unsubscribe }

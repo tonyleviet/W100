@@ -28,7 +28,7 @@ class FirebaseService {
       price, phone, address, description, color, size, active, lastUpdate: datetime
     };
 
-    console.log("addProduct :" + userId + "-", productToAdd);
+    console.log("addProduct userId:" + userId + "-productToAdd-", productToAdd);
     return this.productsCollection().add(productToAdd);
   }
 
@@ -70,7 +70,7 @@ class FirebaseService {
     const year = date.getFullYear();
     const month = date.getMonth();
     const day = date.getDate();
-    districtID = 0;
+    //districtID = 0;
     const last30Days = new Date(year, month - 1, day) // Subtract 1 MONTH
     const nextTotalItems = (pageIndex) * pageSize;
     //console.log("activeProductsCollection skip:", nextTotalItems, " pageSize:", pageSize)
@@ -104,7 +104,8 @@ class FirebaseService {
     const nextTotalItems = (pageIndex) * pageSize;
     console.log("productsCollectionByUser nextTotalItems", nextTotalItems, ' userId ', userId);
     return this.productsCollection()
-      .where("userId", "==", '109490188028640126173')
+    //.where("userId", "==", '109490188028640126173')
+    .where("userId", "==", userId)
       .orderBy("lastUpdate", "desc")
       .limit(nextTotalItems);
     ;

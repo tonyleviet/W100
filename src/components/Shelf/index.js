@@ -29,7 +29,7 @@ class Shelf extends Component {
     isLoading: false,
     loadMore: true,
     hasMore: true,
-    selectedCity: 0, 
+    selectedCity: 0,
     selectedDistrict: 0,
     pageIndex: 1,
     pageSize: 8,
@@ -58,7 +58,7 @@ class Shelf extends Component {
         });
       }
     }
-    
+
   }
   componentWillUnmount() {
     this.mounted = false;
@@ -74,7 +74,7 @@ class Shelf extends Component {
   fetchProducts = () => {
     console.log('fetchProducts begin');
     this.productsTotal(this.state.selectedCity, this.state.selectedDistrict).then(r => {
-      console.log('productsTotal', r, ' currentTotal', this.state.pageSize * this.state.pageIndex);
+      console.log('fetchProducts productsTotal', r, ' currentTotal', this.state.pageSize * this.state.pageIndex);
       this.setState({ totalProduct: r });
       if (this.state.pageSize * this.state.pageIndex > r) {
         this.setState({ hasMore: false });
@@ -88,7 +88,7 @@ class Shelf extends Component {
   }
   refreshProducts = () => {
     const filterRaw = localStorage.getItem(CACHE_FILTER_KEY);
-    console.log('refreshProducts update filter', JSON.parse(filterRaw));
+    console.log('refreshProducts update filterRaw', JSON.parse(filterRaw));
     const filters = JSON.parse(filterRaw);
 
 
@@ -97,7 +97,7 @@ class Shelf extends Component {
     this.setState({ hasMore: true });
     console.log('refreshProducts begin');
     this.productsTotal(filters.selectedCity, filters.selectedDistrict).then(r => {
-      console.log('productsTotal', r, ' currentTotal', this.state.pageSize);
+      console.log('refreshProducts productsTotal', r, ' currentTotal', this.state.pageSize * this.state.pageIndex);
       this.setState({ totalProduct: r });
       if (this.state.pageSize > r) {
         this.setState({ hasMore: false });
@@ -136,10 +136,11 @@ class Shelf extends Component {
   productsTotal = (cityID, districtID) => {
     cityID = parseInt(cityID);
     districtID = parseInt(districtID);
-    districtID = 0;
+    console.log('productsTotal cityID-', cityID, ' -districtID-', districtID);
+    //districtID = 0;
     return new Promise((resolve, reject) => {
       var ref = null
-      if (!districtID && districtID != null && districtID !== 0) {
+      if (districtID != null && districtID != 0) {
         ref = FirebaseService.productsCollection()
           .where("active", "==", true)
           .where("city", "==", cityID)

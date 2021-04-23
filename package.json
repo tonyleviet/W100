@@ -83,7 +83,7 @@
     "webdriverio": "^4.14.1"
   },
   "keywords": [],
-  "description": "Shopping cart",
+  "description": "Sell by MySelf",
   "engines": {
     "npm": "6.13.4",
     "node": "10.16.3"

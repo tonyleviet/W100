@@ -38,7 +38,7 @@ class Login extends Component {
             if (rsSign.districtID) {
                 localStorage.setItem('selectedDistrict', rsSign.districtID);
             }
-            
+
             FirebaseService.signIn(response.tokenId, response.accessToken).then(rs => {
                 console.log("FirebaseService.signIn rs", rs);
                 this.setState({ isUserLoggedIn: true });
@@ -53,8 +53,12 @@ class Login extends Component {
     };
 
     logout = () => {
-        // this.setState({ isUserLoggedIn: false })
+        AuthService.onSignOut();
+        this.setState({ isUserLoggedIn: false })
+        this.setState({ currentUser: null });
+        console.log('logoutSuccess')
     };
+   
     render() {
         /*  <Link
              className="text-white font-helvetica text-base-14 font-medium tracking-wider"
@@ -63,7 +67,8 @@ class Login extends Component {
          </Link > */
         return (<div>
             {!this.state.isUserLoggedIn && (
-                 <GoogleLogin className="google-login"  style={{display:'none'}}
+                <GoogleLogin className="google-login"
+                    //   style={{display:'none'}}
                     clientId={FirebaseConfig.googleLoginKey}
                     scope="https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/photoslibrary"
                     //scope="[https://www.googleapis.com/auth/userinfo.email, https://www.googleapis.com/auth/userinfo.profile, openid, https://www.googleapis.com/auth/drive.readonly]"
@@ -71,16 +76,17 @@ class Login extends Component {
                     onFailure={this.responseGoogle}
                 >
                     <span > Login with Google</span>
-                </GoogleLogin> 
-            
+                </GoogleLogin>
+
 
             )}
             {
                 this.state.isUserLoggedIn && (
-                    <GoogleLogout 
+                    <GoogleLogout  disabled={false}
                         render={renderProps => (
-                            <button 
-                                className="logout-button" style={{display:'none'}}
+                            <button
+                                className="logout-button"
+                                // style={{display:'none'}}
                                 onClick={renderProps.onClick}
                             >
                                 Log Out {this.state.currentUser.Name}
